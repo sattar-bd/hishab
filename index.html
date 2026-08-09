@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মাল্টি-ইউজার পে-রোল ও এডমিন সিস্টেম (Firebase Auth)</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; padding-bottom: 70px; transition: background 0.3s, color 0.3s; }
+        
+        /* ডার্ক মোড স্টাইল ভেরিয়েবল */
+        body.dark-mode { background-color: #0f172a; color: #f8fafc; }
+        body.dark-mode .app-container { background: #1e293b; color: #f8fafc; }
+        body.dark-mode .card { background: #1e293b; border-color: #334155; color: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        body.dark-mode .card-title { color: #f8fafc; border-bottom-color: #3b82f6; }
+        body.dark-mode .form-control { background-color: #0f172a; border-color: #334155; color: #f8fafc; }
+        body.dark-mode th { background: #0f172a; color: #f8fafc; border-color: #334155; }
+        body.dark-mode td { border-color: #334155; color: #cbd5e1; }
+        body.dark-mode .navbar { background: #1e293b; border-top-color: #334155; }
+        body.dark-mode .nav-item { color: #94a3b8; }
+        body.dark-mode .nav-item.active { color: #3b82f6; }
+        body.dark-mode .top-sum-btn { background: #1e293b; border-color: #334155; color: #f8fafc; }
+        body.dark-mode .top-sum-btn .label { color: #94a3b8; }
+        body.dark-mode .top-sum-btn .value { color: #f8fafc; }
+        body.dark-mode .info-item { border-bottom-color: #334155; }
+        body.dark-mode .info-label { color: #94a3b8; }
+        body.dark-mode .info-value { color: #f8fafc; }
+        body.dark-mode .info-value input { background: #0f172a; color: #f8fafc; border-color: #3b82f6; }
+
+        /* সামারি পেজের ফিক্সড ডার্ক মোড কালার */
+        body.dark-mode #page-summary .card:first-child { background: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode #page-summary .card:first-child #cycle-range-text { color: #94a3b8 !important; }
+        body.dark-mode .rate-preview-box { background: #0f172a !important; border-color: #334155 !important; }
+
+        .app-container { max-width: 100%; width: 100%; margin: 0; padding: 0; background: #fff; min-height: 100vh; position: relative; box-shadow: none; transition: background 0.3s, color 0.3s; }
+        .header { background: #1e293b; color: #fff; padding: 12px 15px; text-align: center; font-size: 18px; font-weight: bold; }
+        .user-switcher-bar { background: #0f172a; color: #fff; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+
+        .content-page { display: none; padding: 8px; }
+        .content-page.active { display: block; }
+
+        /* লগিন ও রেজিস্টার পেজ স্টাইল */
+        #page-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
+        .login-box { background: #fff; width: 100%; max-width: 380px; padding: 25px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
+        .login-box h2 { font-size: 20px; color: #1e293b; margin-bottom: 5px; }
+        .login-box p { font-size: 12px; color: #64748b; margin-bottom: 20px; }
+
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .card-title { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+
+        .form-group { margin-bottom: 10px; text-align: left; }
+        .form-group label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #475569; }
+        body.dark-mode .form-group label { color: #94a3b8; }
+        .form-control { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #fff; }
+        .form-control:focus { border-color: #3b82f6; }
+
+        .btn { width: 100%; background: #2563eb; color: #fff; border: none; padding: 9px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        .btn:hover { background: #1d4ed8; }
+        .btn-warning { background: #f59e0b; color: #fff; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-success { background: #10b981; color: #fff; }
+        .btn-outline { background: transparent; color: #2563eb; border: 1px solid #2563eb; }
+        .btn-sm { padding: 4px 8px; font-size: 11px; width: auto; display: inline-block; margin: 1px; }
+        
+        .table-action-btn { background: none; border: none; cursor: pointer; font-size: 13px; padding: 4px 6px; border-radius: 4px; transition: 0.2s; }
+        .table-action-btn.edit { color: #d97706; }
+        .table-action-btn.edit:hover { background: #fef3c7; }
+        .table-action-btn.delete { color: #dc2626; }
+        .table-action-btn.delete:hover { background: #fee2e2; }
+
+        /* মোডাল বা পপআপ স্টাইল */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7); z-index: 2500;
+            display: flex; align-items: center; justify-content: center; padding: 15px;
+        }
+        .modal-content {
+            background: #fff; width: 100%; max-width: 400px;
+            border-radius: 8px; padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-height: 90vh; overflow-y: auto;
+        }
+        body.dark-mode .modal-content { background: #1e293b; color: #f8fafc; border: 1px solid #334155; }
+
+        .received-banner { 
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); 
+            color: white; padding: 12px 14px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 600; margin-top: 10px; 
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25); border: 1px solid rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: space-between;
+        }
+        .received-banner span { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+
+        .salary-banner { 
+            background: linear-gradient(135deg, #059669 0%, #047857 100%); 
+            color: white; padding: 12px 14px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 600; margin-top: 10px; 
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25); border: 1px solid rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: space-between;
+        }
+        .salary-banner span { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+
+        .top-summary-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .top-sum-btn {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 4px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            cursor: default;
+        }
+        .top-sum-btn .label {
+            font-size: 9px;
+            color: #64748b;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .top-sum-btn .value {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .bdt-preview { background: #e0f2fe; color: #0369a1; padding: 8px; border-radius: 6px; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 13px; border: 1px dashed #0284c7; }
+        body.dark-mode .bdt-preview { background: #1e293b; color: #38bdf8; border-color: #38bdf8; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+        th, td { border: 1px solid #e2e8f0; padding: 6px 4px; text-align: center; }
+        th { background: #f8fafc; color: #334155; }
+
+        .navbar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 6px 0; z-index: 1000; }
+        .nav-item { text-align: center; color: #64748b; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; }
+        .nav-item i { font-size: 15px; display: block; margin-bottom: 2px; }
+        .nav-item.active { color: #2563eb; font-weight: bold; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .profile-header-card { background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%); color: #fff; border-radius: 8px; padding: 15px; text-align: center; position: relative; margin-bottom: 10px; }
+        .profile-avatar-container { position: relative; width: 75px; height: 75px; margin: 0 auto 8px; }
+        .profile-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #fff; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        .avatar-edit-icon { position: absolute; bottom: 2px; right: 2px; background: #2563eb; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: 2px solid #fff; }
+        .profile-name { font-size: 16px; font-weight: 700; }
+        .profile-designation { font-size: 11px; opacity: 0.9; }
+        .profile-badge { display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-top: 4px; }
+
+        .role-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #fff; }
+        .role-admin { background-color: #ef4444; }
+        .role-editor { background-color: #3b82f6; }
+        .role-moderator { background-color: #10b981; }
+        .role-user { background-color: #64748b; }
+
+        .info-list { list-style: none; }
+        .info-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px dashed #e2e8f0; font-size: 11px; }
+        .info-item:last-child { border-bottom: none; }
+        .info-label { color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .info-value { color: #0f172a; font-weight: 600; text-align: right; display: flex; align-items: center; gap: 5px; }
+        .info-value input { padding: 3px 6px; font-size: 11px; border: 1px solid #3b82f6; border-radius: 4px; width: 130px; outline: none; background: #f8fafc; }
+        .inline-edit-btn { background: none; border: none; color: #2563eb; cursor: pointer; font-size: 12px; padding: 2px 4px; }
+        .inline-edit-btn:hover { color: #1d4ed8; }
+
+        .hidden { display: none !important; }
+
+        .error-msg { color: #ef4444; font-size: 12px; font-weight: bold; margin-top: 8px; display: none; }
+        .success-msg { color: #10b981; font-size: 12px; font-weight: bold; margin-top: 8px; display: none; }
+        
+        .managing-banner { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 8px 12px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-radius: 6px; }
+
+        .whatsapp-float {
+            position: fixed; bottom: 70px; right: 15px; background-color: #25d366; color: #fff; width: 48px; height: 48px; border-radius: 50%; text-align: center; font-size: 26px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1500; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;
+        }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8);
+            z-index: 3000; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px;
+            flex-direction: column; gap: 10px;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .auth-switch { margin-top: 15px; font-size: 12px; color: #64748b; }
+        .auth-switch span { color: #2563eb; cursor: pointer; font-weight: bold; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <div>ফায়ারবেস থেকে ডাটা লোড হচ্ছে...</div>
+</div>
+
+<!-- লগিন / রেজিস্টার / পাসওয়ার্ড রিসেট পেজ -->
+<div id="page-login" class="hidden">
+    <div class="login-box">
+        <i class="fa-solid fa-user-lock" style="font-size: 35px; color: #2563eb; margin-bottom: 10px;"></i>
+        
+        <!-- ১. লগিন ফর্ম -->
+        <div id="form-login-container">
+            <h2 id="auth-box-title">লগিন করুন</h2>
+            <p id="auth-box-subtitle">সিস্টেমে প্রবেশ করতে ইমেইল ও পাসওয়ার্ড দিন</p>
+            
+            <div class="form-group" id="group-reg-name" style="display:none;">
+                <label>আপনার নাম</label>
+                <input type="text" id="auth-name" class="form-control" placeholder="পূর্ণ নাম">
+            </div>
+
+            <div class="form-group">
+                <label>ইমেইল এড্রেস</label>
+                <input type="email" id="auth-email" class="form-control" placeholder="example@gmail.com">
+            </div>
+            
+            <div class="form-group" id="group-auth-pass">
+                <label>পাসওয়ার্ড</label>
+                <input type="password" id="auth-password" class="form-control" placeholder="******">
+            </div>
+
+            <div id="auth-error" class="error-msg"></div>
+            <div id="auth-success" class="success-msg"></div>
+
+            <button class="btn" style="margin-top: 15px;" id="auth-submit-btn" onclick="handleAuthSubmit()">লগিন করুন</button>
+            
+            <div style="margin-top: 10px; text-align: right;" id="forgot-pass-link-container">
+                <span style="font-size: 11px; color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="switchAuthMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</span>
+            </div>
+
+            <div class="auth-switch" id="auth-switch-text">
+                একাউন্ট নেই? <span onclick="switchAuthMode('register')">রেজিস্টার করুন</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="header">পে-রোল ও এটেন্ডেন্স অ্যাপ</div>
+    
+    <div class="user-switcher-bar">
+        <span><i class="fa-solid fa-user-check"></i> লগইন: <b id="logged-user-name">লোড হচ্ছে...</b></span>
+        <button onclick="logoutUser()" style="background: #ef4444; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;">
+            <i class="fa-solid fa-right-from-bracket"></i> লগ আউট
+        </button>
+    </div>
+
+    <div id="managing-banner" class="managing-banner hidden">
+        <span><i class="fa-solid fa-triangle-exclamation"></i> আপনি বর্তমানে <span id="managing-target-name" style="text-decoration: underline;"></span>-এর ডাটা ম্যানেজ করছেন</span>
+        <button class="btn btn-sm btn-warning" onclick="exitManagingUser()" style="margin: 0; width: auto;">ফিরে যান</button>
+    </div>
+
+    <!-- ১. হাজিরা এন্ট্রি পেজ -->
+    <div id="page-entry" class="content-page active">
+        
+        <div class="top-summary-btns">
+            <div class="top-sum-btn">
+                <span class="label">মাসিক বেতন</span>
+                <span class="value">RM <span id="top-total-salary">0.00</span></span>
+            </div>
+            <div class="top-sum-btn">
+                <span class="label">মোট রেমিটেন্স</span>
+                <span class="value">RM <span id="top-total-remittance">0.00</span></span>
+            </div>
+            <div class="top-sum-btn">
+                <span class="label">প্রাপ্ত বেতন</span>
+                <span class="value">RM <span id="top-total-received">0.00</span></span>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 8px;">
+            <div class="salary-banner" style="margin-top: 0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-file-invoice-dollar" style="font-size: 18px;"></i>
+                    <span style="font-size: 13px; font-weight: 500;">চলতি মাসের আনুমানিক বেতন</span>
+                </div>
+                <span>RM <span id="total-salary-home">0.00</span></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title" id="att-form-title">Daily Attendance & Entry</div>
+            <input type="hidden" id="att-edit-id" value="">
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>তারিখ</label>
+                    <input type="date" id="att-date" class="form-control" onchange="onDateChange()">
+                </div>
+                <div class="form-group">
+                    <label>দিন (অটো)</label>
+                    <select id="att-day" class="form-control" onchange="calculateOT()">
+                        <option value="রবিবার">রবিবার (Sunday)</option>
+                        <option value="সোমবার">সোমবার (Monday)</option>
+                        <option value="মঙ্গলবার">মঙ্গলবার (Tuesday)</option>
+                        <option value="বুধবার">বুধবার (Wednesday)</option>
+                        <option value="বৃহস্পতিবার">বৃহস্পতিবার (Thursday)</option>
+                        <option value="শুক্রবার">শুক্রবার (Friday)</option>
+                        <option value="শনিবার">শনিবার (Saturday)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>দিনের ধরন (Day Type)</label>
+                <select id="day-type" class="form-control" onchange="calculateOT()">
+                    <option value="Regular">রেগুলার (Regular Work Day)</option>
+                    <option value="Sunday">রবিবার (Sunday - 2x Basic)</option>
+                    <option value="Holiday">সরকারি ছুটি (Holiday - 3x Basic)</option>
+                </select>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>In Time</label>
+                    <input type="time" id="in-time" class="form-control" value="08:00" onchange="calculateOT()">
+                </div>
+                <div class="form-group">
+                    <label>Out Time</label>
+                    <input type="time" id="out-time" class="form-control" value="17:00" onchange="calculateOT()">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>অভারটাইম (ঘণ্টা)</label>
+                <input type="number" step="0.5" id="ot-hours" class="form-control" value="0">
+            </div>
+
+            <button class="btn" id="att-save-btn" onclick="saveAttendance()"><i class="fa-solid fa-check"></i> হাজিরা সেভ করুন</button>
+            <button class="btn btn-danger" id="att-cancel-btn" onclick="cancelAttendanceEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+        </div>
+    </div>
+
+    <!-- ২. সামারি পেজ -->
+    <div id="page-summary" class="content-page">
+        <!-- মাস সিলেক্টর ও ফিল্ড সামারি কার্ড -->
+        <div class="card" style="background: #f8fafc; border: 1px solid #3b82f6;">
+            <div class="card-title">
+                <span><i class="fa-solid fa-calendar-days"></i> মাসিক হিসাব সামারি (২৬ থেকে ২৫ চক্র)</span>
+                <!-- স্যালারি রেট সেটআপ ওপেন করার বাটন -->
+                <button class="btn btn-sm btn-warning" onclick="openRateModal()"><i class="fa-solid fa-sliders"></i> রেট সেটআপ</button>
+            </div>
+            <div class="form-group">
+                <label>মাস নির্বাচন করুন</label>
+                <input type="month" id="summary-filter-month" class="form-control" onchange="renderAttendanceSummary()">
+            </div>
+            <div id="cycle-range-text" style="font-size: 11px; color: #64748b; margin-bottom: 6px; font-weight: bold; text-align: center;"></div>
+            
+            <div class="grid-2" style="font-size: 11px; line-height: 1.8; margin-top: 8px;">
+                <div>মোট হাজিরা: <b id="stat-duty">0</b> দিন</div>
+                <div>রবিবার ডিউটি: <b id="stat-sunday">0</b> দিন</div>
+                <div>সরকারি ছুটি: <b id="stat-holiday">0</b> দিন</div>
+                <div>মোট OT: <b id="stat-ot">0</b> ঘণ্টা</div>
+            </div>
+
+            <!-- ৩টি বক্স এক লাইনে পাশাপাশি (প্রিমিয়াম স্টাইল) -->
+            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
+                <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 6px 4px; border-radius: 6px; text-align: center; box-shadow: 0 2px 5px rgba(5,150,105,0.2);">
+                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;">মাসিক বেতন</div>
+                    <div style="font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">RM <span id="summary-monthly-salary">0.00</span></div>
+                </div>
+                <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 6px 4px; border-radius: 6px; text-align: center; box-shadow: 0 2px 5px rgba(2,132,199,0.2);">
+                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;">প্রাপ্ত বেতন</div>
+                    <div style="font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">RM <span id="summary-monthly-received">0.00</span></div>
+                </div>
+                <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: white; padding: 6px 4px; border-radius: 6px; text-align: center; box-shadow: 0 2px 5px rgba(217,119,6,0.2);">
+                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;">রেমিটেন্স</div>
+                    <div style="font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">RM <span id="summary-monthly-remittance">0.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- স্যালারি রেট সেটআপ পপআপ (Modal) -->
+        <div id="rate-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-sliders"></i> স্যালারি রেট সেটআপ</span>
+                    <button class="btn btn-danger btn-sm" onclick="closeRateModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Basic Salary (RM)</label>
+                        <input type="number" id="cfg-basic" class="form-control" value="1700" oninput="calculateRatePreview(true)">
+                    </div>
+                    <div class="form-group">
+                        <label>মাসিক কর্মদিবস</label>
+                        <input type="number" id="cfg-days" class="form-control" value="26" oninput="calculateRatePreview(true)">
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>দৈনিক ডিউটি (ঘণ্টা)</label>
+                        <input type="number" id="cfg-hours" class="form-control" value="8" oninput="calculateRatePreview(true)">
+                    </div>
+                    <div class="form-group">
+                        <label>OT Multiplier (যেমন: 1.5x)</label>
+                        <input type="number" step="0.1" id="cfg-ot-mult" class="form-control" value="1.5" oninput="calculateRatePreview(true)">
+                    </div>
+                </div>
+
+                <div class="rate-preview-box" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px; margin-top: 5px; font-size: 12px; line-height: 1.8;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>১. রেগুলার ডিউটি (১ গুণ):</span>
+                        <b style="color: #0284c7;">RM <span id="rate-regular">0.00</span></b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>২. রবিবার ডিউটি (২ গুণ):</span>
+                        <b style="color: #d97706;">RM <span id="rate-sunday">0.00</span></b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>৩. সরকারি ছুটি / হলিডে (৩ গুণ):</span>
+                        <b style="color: #dc2626;">RM <span id="rate-holiday">0.00</span></b>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" style="margin-top: 10px;" onclick="closeRateModal()">বন্ধ করুন</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span id="recv-form-title"><i class="fa-solid fa-wallet"></i> মাসিক প্রাপ্ত বেতন হিসাব (Received Salary)</span></div>
+            <input type="hidden" id="recv-edit-id" value="">
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>মাস নির্বাচন করুন</label>
+                    <input type="month" id="recv-month" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>প্রাপ্ত পরিমাণ (RM)</label>
+                    <input type="number" step="0.01" id="recv-amount" class="form-control" placeholder="0.00">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>নোট (ঐচ্ছিক)</label>
+                <input type="text" id="recv-note" class="form-control" placeholder="যেমন: ব্যাংকে রিসিভ হয়েছে">
+            </div>
+            
+            <button class="btn btn-success" id="recv-save-btn" onclick="saveReceivedSalary()"><i class="fa-solid fa-plus"></i> প্রাপ্ত বেতন সেভ করুন</button>
+            <button class="btn btn-danger" id="recv-cancel-btn" onclick="cancelReceivedEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+
+            <div class="received-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-check" style="font-size: 18px;"></i>
+                    <span style="font-size: 13px; font-weight: 500;">সর্বমোট প্রাপ্ত বেতন</span>
+                </div>
+                <span>RM <span id="total-received-salary">0.00</span></span>
+            </div>
+
+            <div style="margin-top: 10px; overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>মাস</th>
+                            <th>প্রাপ্ত পরিমাণ (RM)</th>
+                            <th>নোট</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="received-salary-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title" id="cycle-title">চলতি মাসের সামারি</div>
+            
+            <div class="salary-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-file-invoice-dollar" style="font-size: 18px;"></i>
+                    <span style="font-size: 13px; font-weight: 500;">চলতি মাসের আনুমানিক বেতন</span>
+                </div>
+                <span>RM <span id="total-salary">0.00</span></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)</div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>তারিখ</th>
+                            <th>বার</th>
+                            <th>In-Out</th>
+                            <th>OT</th>
+                            <th>টাইপ</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ৩. রেমিটেন্স পেজ -->
+    <div id="page-remittance" class="content-page">
+        <div class="card">
+            <div class="card-title" id="rem-form-title">রেমিটেন্স এন্ট্রি</div>
+            <input type="hidden" id="rem-edit-id" value="">
+            
+            <div class="form-group">
+                <label>তারিখ</label>
+                <input type="date" id="rem-date" class="form-control">
+            </div>
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>পরিমাণ (RM)</label>
+                    <input type="number" id="rem-amount" class="form-control" placeholder="0.00" oninput="calculateBDT()">
+                </div>
+                <div class="form-group">
+                    <label>রেট (1 RM = BDT)</label>
+                    <input type="number" step="0.01" id="rem-rate" class="form-control" placeholder="যেমন: 27.5" oninput="calculateBDT()">
+                </div>
+            </div>
+
+            <div class="bdt-preview">
+                বাংলা টাকা: ৳ <span id="rem-bdt-total">0.00</span>
+            </div>
+
+            <div class="form-group">
+                <label>নোট / বিবরণ</label>
+                <input type="text" id="rem-note" class="form-control" placeholder="যেমন: বাড়িতে পাঠিয়েছি">
+            </div>
+            
+            <button class="btn" id="rem-save-btn" onclick="saveRemittance()">রেমিটেন্স সেভ করুন</button>
+            <button class="btn btn-danger" id="rem-cancel-btn" onclick="cancelRemittanceEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">রেমিটেন্স হিস্ট্রি</div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>তারিখ</th>
+                            <th>পরিমাণ (RM)</th>
+                            <th>রেট (BDT)</th>
+                            <th>মোট টাকা (BDT)</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="remittance-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ৪. প্রোফাইল পেজ -->
+    <div id="page-profile" class="content-page">
+        <div class="profile-header-card">
+            <div class="profile-avatar-container">
+                <img id="view-avatar" src="https://cdn-icons-png.flaticon.com/510/3135/3135715.png" class="profile-avatar" alt="Profile">
+                <label for="avatar-input" class="avatar-edit-icon"><i class="fa-solid fa-camera"></i></label>
+                <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="uploadAvatar(event)">
+            </div>
+            <div class="profile-name" id="view-name">লোড হচ্ছে...</div>
+            <div class="profile-designation" id="view-designation"></div>
+            <div class="profile-badge" id="view-emp-id"></div>
+            <div style="margin-top: 5px;"><span id="view-role" class="role-badge role-user">USER</span></div>
+        </div>
+
+        <!-- অ্যাপ প্রিফারেন্স বা সেটিংস কার্ড (ডার্ক মোড ও ভাষা সিলেক্ট) -->
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-gear"></i> অ্যাপ সেটিংস (Preferences)</span>
+            </div>
+            <ul class="info-list">
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-moon"></i> ডার্ক মোড (Dark Mode)</span>
+                    <span class="info-value">
+                        <label style="position: relative; display: inline-block; width: 44px; height: 22px; cursor: pointer;">
+                            <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()" style="opacity: 0; width: 0; height: 0;">
+                            <span style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 22px;" id="dark-slider"></span>
+                            <span style="position: absolute; content: ''; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;" id="dark-circle"></span>
+                        </label>
+                    </span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-globe"></i> ভাষা নির্বাচন (Language)</span>
+                    <span class="info-value">
+                        <select id="lang-selector" class="form-control" style="width: 110px; padding: 4px;" onchange="changeLanguage()">
+                            <option value="bn">বাংলা (Bangla)</option>
+                            <option value="en">English</option>
+                        </select>
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-id-card"></i> ইউজার ইনফরমেশন</span>
+                <span style="font-size: 10px; color: #64748b;">আইকনে ক্লিক করে সরাসরি এডিট করুন</span>
+            </div>
+            <ul class="info-list">
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-user"></i> নাম</span>
+                    <span class="info-value" id="field-name">- <button class="inline-edit-btn" onclick="enableInlineEdit('name')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-briefcase"></i> পদবি</span>
+                    <span class="info-value" id="field-designation">- <button class="inline-edit-btn" onclick="enableInlineEdit('designation')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-id-badge"></i> এমপ্লয়ি আইডি</span>
+                    <span class="info-value" id="field-empId">- <button class="inline-edit-btn" onclick="enableInlineEdit('empId')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-building"></i> কোম্পানি</span>
+                    <span class="info-value" id="field-company">- <button class="inline-edit-btn" onclick="enableInlineEdit('company')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-phone"></i> মোবাইল</span>
+                    <span class="info-value" id="field-phone">- <button class="inline-edit-btn" onclick="enableInlineEdit('phone')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-envelope"></i> ইমেইল</span>
+                    <span class="info-value" id="field-email">- <button class="inline-edit-btn" onclick="enableInlineEdit('email')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-passport"></i> পাসপোর্ট</span>
+                    <span class="info-value" id="field-passport">- <button class="inline-edit-btn" onclick="enableInlineEdit('passport')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-building-columns"></i> ব্যাংক</span>
+                    <span class="info-value" id="field-bankName">- <button class="inline-edit-btn" onclick="enableInlineEdit('bankName')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label"><i class="fa-solid fa-credit-card"></i> অ্যাকাউন্ট</span>
+                    <span class="info-value" id="field-bankAcc">- <button class="inline-edit-btn" onclick="enableInlineEdit('bankAcc')"><i class="fa-solid fa-pen"></i></button></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ৫. এডমিন পেজ (শুধু এডমিনদের জন্য দৃশ্যমান) -->
+    <div id="page-admin" class="content-page">
+        <div id="admin-content">
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-users-gear"></i> ইউজার ও রোল ম্যানেজমেন্ট</span>
+                </div>
+
+                <div id="user-edit-section" class="hidden" style="background:#f1f5f9; padding:8px; border-radius:6px; margin-bottom:10px;">
+                    <h5 id="user-form-title" style="margin-bottom:8px; font-size:12px;">ইউজার এডিট করুন</h5>
+                    <input type="hidden" id="admin-user-id">
+                    
+                    <div class="form-group"><label>নাম *</label><input type="text" id="admin-user-name" class="form-control" placeholder="ইউজারের নাম"></div>
+                    <div class="form-group"><label>ইমেইল *</label><input type="email" id="admin-user-email" class="form-control" placeholder="user@example.com"></div>
+
+                    <div id="role-select-group" class="form-group">
+                        <label>ইউজার রোল (Role)</label>
+                        <select id="admin-user-role" class="form-control">
+                            <option value="User">User (সাধারণ ইউজার)</option>
+                            <option value="Admin">Admin (এডমিন - পূর্ণ এক্সেস)</option>
+                            <option value="Editor">Editor (এডিটর)</option>
+                            <option value="Moderator">Moderator (মডারেটর)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-sm" onclick="saveUserFromAdmin()">সেভ করুন</button>
+                    <button class="btn btn-danger btn-sm" onclick="hideUserForm()">বাতিল</button>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>নাম ও ইমেইল</th>
+                                <th>রোল (Role)</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-user-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://wa.me/60165251783" class="whatsapp-float" target="_blank" title="WhatsApp এ যোগাযোগ করুন">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <div class="navbar">
+        <div class="nav-item active" id="nav-entry" onclick="switchPage('entry', this)"><i class="fa-solid fa-calendar-plus"></i>এন্ট্রি</div>
+        <div class="nav-item" id="nav-summary" onclick="switchPage('summary', this)"><i class="fa-solid fa-chart-pie"></i>সামারি</div>
+        <div class="nav-item" id="nav-remittance" onclick="switchPage('remittance', this)"><i class="fa-solid fa-money-bill-transfer"></i>রেমিটেন্স</div>
+        <div class="nav-item" id="nav-profile" onclick="switchPage('profile', this)"><i class="fa-solid fa-user"></i>প্রোফাইল</div>
+        <!-- এডমিন নেভবার আইটেম (ডিফল্ট hidden রাখা হয়েছে যাতে সাধারণ ইউজার দেখতে না পারে) -->
+        <div class="nav-item hidden" id="nav-admin" onclick="switchPage('admin', this)"><i class="fa-solid fa-user-shield"></i>এডমিন</div>
+    </div>
+</div>
+
+<!-- Firebase Modular SDK Script -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
+    import { getFirestore, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCtw_A76P7meDwrEBZ41_6mU-7WGjAbaIo",
+        authDomain: "hishab-b208a.firebaseapp.com",
+        projectId: "hishab-b208a",
+        storageBucket: "hishab-b208a.firebasestorage.app",
+        messagingSenderId: "952616676939",
+        appId: "1:952616676939:web:fe474600f4bbde0a4367ce",
+        measurementId: "G-B0HSGB99T7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    window.db = db;
+    window.auth = auth;
+    window.fsMethods = { collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc };
+    window.authMethods = { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut };
+    
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            window.firebaseAuthUser = user;
+            await initAppAfterAuth(user.uid);
+        } else {
+            window.firebaseAuthUser = null;
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('page-login').classList.remove('hidden');
+        }
+    });
+</script>
+
+<script>
+    const dayNames = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+    let managingUserId = null; 
+    let activeUserId = null;
+    let appData = { users: [] };
+    let currentAuthMode = 'login';
+    const ADMIN_EMAIL = "sattar124@gmail.com";
+
+    async function initAppAfterAuth(uid) {
+        try {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            
+            const firebaseUser = window.firebaseAuthUser;
+            const isTargetAdmin = (firebaseUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
+            const usersSnapshot = await window.fsMethods.getDocs(window.fsMethods.collection(window.db, "users"));
+            appData.users = [];
+            
+            usersSnapshot.forEach(docSnap => {
+                let uData = docSnap.data();
+                if(!uData.role) {
+                    uData.role = "User";
+                }
+                if(!uData.settings) {
+                    uData.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' };
+                }
+                if(uData.profile && uData.profile.email && uData.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    uData.role = "Admin";
+                }
+                appData.users.push(uData);
+            });
+
+            let currentUserDoc = appData.users.find(u => u.id === uid);
+            if (!currentUserDoc) {
+                currentUserDoc = {
+                    id: uid,
+                    role: (isTargetAdmin || appData.users.length === 0) ? "Admin" : "User",
+                    profile: {
+                        name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+                        email: firebaseUser.email,
+                        designation: isTargetAdmin ? "System Administrator" : "General User",
+                        empId: "EMP-" + Math.floor(10000 + Math.random() * 90000),
+                        company: "মালয়েশিয়া কনস্ট্রাকশন লিঃ",
+                        phone: "+60 12-345 6789",
+                        passport: "",
+                        bankName: "",
+                        bankAcc: "",
+                        avatar: "https://cdn-icons-png.flaticon.com/510/3135/3135715.png"
+                    },
+                    settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' },
+                    attendances: [],
+                    remittances: [],
+                    receivedSalaries: []
+                };
+                if(isTargetAdmin) {
+                    currentUserDoc.role = "Admin";
+                }
+                await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), currentUserDoc);
+                appData.users.push(currentUserDoc);
+            } else if (isTargetAdmin && currentUserDoc.role !== "Admin") {
+                currentUserDoc.role = "Admin";
+                await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), currentUserDoc);
+            }
+
+            activeUserId = uid;
+            document.getElementById('loading-overlay').style.display = 'none';
+
+            document.getElementById('att-date').value = getTodayLocalDateString();
+            onDateChange();
+            document.getElementById('rem-date').value = getTodayLocalDateString();
+            document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('summary-filter-month').value = new Date().toISOString().slice(0, 7);
+
+            document.getElementById('page-login').classList.add('hidden');
+            loadAppUI();
+
+        } catch (error) {
+            console.error("Firebase Load Error:", error);
+            document.getElementById('loading-overlay').innerHTML = `<div>ডাটা লোড করতে সমস্যা হয়েছে! ইন্টারনেট কানেকশন চেক করুন।</div>`;
+        }
+    }
+
+    async function saveActiveUserToFirebase() {
+        const user = getActiveUser();
+        if(!user) return;
+        try {
+            await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(user.id)), user);
+        } catch (e) {
+            console.error("Firebase Save Error:", e);
+        }
+    }
+
+    function getLoggedInUser() {
+        return appData.users.find(u => u.id === activeUserId) || appData.users[0];
+    }
+
+    function getActiveUser() {
+        if (managingUserId !== null) {
+            let targetUser = appData.users.find(u => u.id === managingUserId);
+            if (targetUser) return targetUser;
+        }
+        return getLoggedInUser();
+    }
+
+    function isAdmin() {
+        let logged = getLoggedInUser();
+        return logged && ((logged.profile && logged.profile.email && logged.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || logged.role === "Admin" || logged.role === "admin");
+    }
+
+    function getTodayLocalDateString() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function formatDateToDDMMYY(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            let year = parts[0];
+            let month = parts[1];
+            let day = parts[2];
+            if (year.length === 4) year = year.slice(2);
+            return `${day}-${month}-${year}`;
+        }
+        return dateStr;
+    }
+
+    function getCycleDateRange(yearMonthStr) {
+        if (!yearMonthStr) return { start: '', end: '' };
+        let [y, m] = yearMonthStr.split('-').map(Number);
+        
+        let prevY = y, prevM = m - 1;
+        if (prevM === 0) {
+            prevM = 12;
+            prevY = y - 1;
+        }
+
+        let startStr = `${prevY}-${String(prevM).padStart(2, '0')}-26`;
+        let endStr = `${y}-${String(m).padStart(2, '0')}-25`;
+
+        return { start: startStr, end: endStr };
+    }
+
+    function isDateInCycle(dateStr, yearMonthStr) {
+        if (!dateStr || !yearMonthStr) return false;
+        let { start, end } = getCycleDateRange(yearMonthStr);
+        return dateStr >= start && dateStr <= end;
+    }
+
+    function switchAuthMode(mode) {
+        currentAuthMode = mode;
+        const title = document.getElementById('auth-box-title');
+        const subtitle = document.getElementById('auth-box-subtitle');
+        const nameGroup = document.getElementById('group-reg-name');
+        const passGroup = document.getElementById('group-auth-pass');
+        const submitBtn = document.getElementById('auth-submit-btn');
+        const switchText = document.getElementById('auth-switch-text');
+        const forgotLinkContainer = document.getElementById('forgot-pass-link-container');
+        
+        document.getElementById('auth-error').style.display = 'none';
+        document.getElementById('auth-success').style.display = 'none';
+
+        if (mode === 'login') {
+            title.innerText = 'লগিন করুন';
+            subtitle.innerText = 'সিস্টেমে প্রবেশ করতে ইমেইল ও পাসওয়ার্ড দিন';
+            nameGroup.style.display = 'none';
+            passGroup.style.display = 'block';
+            submitBtn.innerText = 'লগিন করুন';
+            forgotLinkContainer.style.display = 'block';
+            switchText.innerHTML = `একাউন্ট নেই? <span onclick="switchAuthMode('register')">রেজিস্টার করুন</span>`;
+        } else if (mode === 'register') {
+            title.innerText = 'রেজিস্ট্রেশন করুন';
+            subtitle.innerText = 'নতুন একাউন্ট তৈরি করতে তথ্য দিন';
+            nameGroup.style.display = 'block';
+            passGroup.style.display = 'block';
+            submitBtn.innerText = 'রেজিস্টার করুন';
+            forgotLinkContainer.style.display = 'none';
+            switchText.innerHTML = `ইতিমধ্যে একাউন্ট আছে? <span onclick="switchAuthMode('login')">লগিন করুন</span>`;
+        } else if (mode === 'forgot') {
+            title.innerText = 'পাসওয়ার্ড রিকভারি';
+            subtitle.innerText = 'আপনার রেজিস্টার্ড ইমেইল দিন, পাসওয়ার্ড রিসেট লিংক পাঠানো হবে';
+            nameGroup.style.display = 'none';
+            passGroup.style.display = 'none';
+            submitBtn.innerText = 'রিসেট লিংক পাঠান';
+            forgotLinkContainer.style.display = 'block';
+            switchText.innerHTML = `লগিন পেজে ফিরে যান? <span onclick="switchAuthMode('login')">লগিন করুন</span>`;
+        }
+    }
+
+    async function handleAuthSubmit() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value.trim();
+        const name = document.getElementById('auth-name').value.trim();
+        const errDiv = document.getElementById('auth-error');
+        const successDiv = document.getElementById('auth-success');
+
+        errDiv.style.display = 'none';
+        successDiv.style.display = 'none';
+
+        if (!email) {
+            errDiv.innerText = 'দয়া করে ইমেইল দিন!';
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        try {
+            if (currentAuthMode === 'login') {
+                await window.authMethods.signInWithEmailAndPassword(window.auth, email, password);
+            } else if (currentAuthMode === 'register') {
+                if (!name || !password) {
+                    errDiv.innerText = 'নাম এবং পাসওয়ার্ড আবশ্যক!';
+                    errDiv.style.display = 'block';
+                    return;
+                }
+                const userCredential = await window.authMethods.createUserWithEmailAndPassword(window.auth, email, password);
+                const uid = userCredential.user.uid;
+                const isNewAdmin = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+                
+                const newUser = {
+                    id: uid,
+                    role: isNewAdmin ? "Admin" : "User",
+                    profile: {
+                        name: name,
+                        email: email,
+                        designation: isNewAdmin ? "System Administrator" : "General User",
+                        empId: "EMP-" + Math.floor(10000 + Math.random() * 90000),
+                        company: "মালয়েশিয়া কনস্ট্রাকশন লিঃ",
+                        phone: "",
+                        passport: "",
+                        bankName: "",
+                        bankAcc: "",
+                        avatar: "https://cdn-icons-png.flaticon.com/510/3135/3135715.png"
+                    },
+                    settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' },
+                    attendances: [],
+                    remittances: [],
+                    receivedSalaries: []
+                };
+                await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), newUser);
+            } else if (currentAuthMode === 'forgot') {
+                await window.authMethods.sendPasswordResetEmail(window.auth, email);
+                successDiv.innerText = 'পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইনবক্স চেক করুন।';
+                successDiv.style.display = 'block';
+                return;
+            }
+        } catch (error) {
+            console.error(error);
+            errDiv.innerText = 'ত্রুটি: ' + (error.message || 'সঠিক তথ্য দিন।');
+            errDiv.style.display = 'block';
+        }
+    }
+
+    function loadAppUI() {
+        const loggedUser = getLoggedInUser();
+        if(!loggedUser) return;
+        document.getElementById('logged-user-name').innerText = loggedUser.profile.name;
+        
+        const navAdmin = document.getElementById('nav-admin');
+        if (isAdmin()) {
+            navAdmin.classList.remove('hidden');
+        } else {
+            navAdmin.classList.add('hidden');
+            if (document.getElementById('page-admin').classList.contains('active')) {
+                switchPage('entry', document.getElementById('nav-entry'));
+            }
+        }
+
+        const banner = document.getElementById('managing-banner');
+        if (managingUserId !== null) {
+            let tUser = appData.users.find(u => u.id === managingUserId);
+            if (tUser) {
+                document.getElementById('managing-target-name').innerText = tUser.profile.name;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        } else {
+            banner.classList.add('hidden');
+        }
+
+        loadActiveUserSettings();
+        renderProfile();
+        renderAll();
+    }
+
+    async function logoutUser() {
+        await window.authMethods.signOut(window.auth);
+        managingUserId = null;
+        activeUserId = null;
+        document.getElementById('page-login').classList.remove('hidden');
+    }
+
+    function manageUserEntries(userId) {
+        if(!isAdmin()) { alert("শুধুমাত্র এডমিন এই সুবিধা উপভোগ করতে পারবেন!"); return; }
+        managingUserId = userId;
+        loadAppUI();
+        switchPage('summary', document.getElementById('nav-summary'));
+    }
+
+    function exitManagingUser() {
+        managingUserId = null;
+        loadAppUI();
+        switchPage('admin', document.getElementById('nav-admin'));
+    }
+
+    function switchPage(pageId, element) {
+        if (pageId === 'admin' && !isAdmin()) {
+            alert("আপনার এডমিন প্যানেল দেখার অনুমতি নেই!");
+            return;
+        }
+
+        document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        element.classList.add('active');
+        
+        if(pageId === 'admin') {
+            renderAdminUserList();
+        }
+        renderAll();
+    }
+
+    function openRateModal() {
+        document.getElementById('rate-modal').classList.remove('hidden');
+    }
+
+    function closeRateModal() {
+        document.getElementById('rate-modal').classList.add('hidden');
+    }
+
+    function onDateChange() {
+        const dateVal = document.getElementById('att-date').value;
+        if (dateVal) {
+            const date = new Date(dateVal.replace(/-/g, '/'));
+            const dayName = dayNames[date.getDay()];
+            document.getElementById('att-day').value = dayName;
+            
+            if (dayName === 'রবিবার') {
+                document.getElementById('day-type').value = 'Sunday';
+            } else if (dayName === 'শনিবার') {
+                document.getElementById('day-type').value = 'Saturday';
+            } else {
+                document.getElementById('day-type').value = 'Regular';
+            }
+        }
+        calculateOT();
+    }
+
+    function calculateOT() {
+        const dateVal = document.getElementById('att-date').value;
+        const inTime = document.getElementById('in-time').value;
+        const outTime = document.getElementById('out-time').value;
+        const dayType = document.getElementById('day-type').value;
+        const dayName = document.getElementById('att-day').value;
+        
+        if (!dateVal || !inTime || !outTime) return;
+
+        let [inH, inM] = inTime.split(':').map(Number);
+        let [outH, outM] = outTime.split(':').map(Number);
+
+        let startMinutes = inH * 60 + inM;
+        let endMinutes = outH * 60 + outM;
+        if (endMinutes < startMinutes) endMinutes += 24 * 60;
+
+        let otMinutes = 0;
+        
+        if (dayType === 'Regular') {
+            const regularStart = 8 * 60;
+            let regularEnd = 17 * 60;
+            if (startMinutes < regularStart) otMinutes += (regularStart - startMinutes);
+            if (endMinutes > regularEnd) otMinutes += (endMinutes - regularEnd);
+        } else if (dayType === 'Saturday' || dayName === 'শনিবার') {
+            const satStart = 8 * 60;
+            const satEnd = 14 * 60;
+            if (startMinutes < satStart) otMinutes += (satStart - startMinutes);
+            if (endMinutes > satEnd) otMinutes += (endMinutes - satEnd);
+        } else {
+            const standardStart = 8 * 60;
+            const standardEnd = 17 * 60;
+            if (startMinutes < standardStart) otMinutes += (standardStart - startMinutes);
+            if (endMinutes > standardEnd) otMinutes += (endMinutes - standardEnd);
+        }
+
+        let totalOT = (otMinutes / 60);
+        document.getElementById('ot-hours').value = totalOT > 0 ? totalOT.toFixed(1) : 0;
+    }
+
+    async function saveAttendance() {
+        const user = getActiveUser();
+        const editId = document.getElementById('att-edit-id').value;
+        const date = document.getElementById('att-date').value;
+        const day = document.getElementById('att-day').value;
+        const type = document.getElementById('day-type').value;
+        const inTime = document.getElementById('in-time').value;
+        const outTime = document.getElementById('out-time').value;
+        const ot = parseFloat(document.getElementById('ot-hours').value) || 0;
+
+        if(!date) return;
+
+        if(!user.attendances) user.attendances = [];
+
+        if (editId) {
+            user.attendances = user.attendances.map(a => a.id == editId ? { id: Number(editId), date, day, type, inTime, outTime, ot } : a);
+        } else {
+            const entry = { id: Date.now(), date, day, type, inTime, outTime, ot };
+            user.attendances = user.attendances.filter(a => a.date !== date);
+            user.attendances.push(entry);
+        }
+
+        await saveActiveUserToFirebase();
+        cancelAttendanceEdit();
+        renderAll();
+        alert("হাজিরা সফলভাবে সেভ/আপডেট করা হয়েছে!");
+    }
+
+    function editAttendance(id) {
+        const user = getActiveUser();
+        const item = user.attendances.find(a => a.id === id);
+        if(!item) return;
+
+        document.getElementById('att-edit-id').value = item.id;
+        document.getElementById('att-date').value = item.date;
+        document.getElementById('att-day').value = item.day;
+        document.getElementById('day-type').value = item.type;
+        document.getElementById('in-time').value = item.inTime;
+        document.getElementById('out-time').value = item.outTime;
+        document.getElementById('ot-hours').value = item.ot;
+
+        document.getElementById('att-form-title').innerText = "হাজিরা এডিট করুন";
+        document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('att-cancel-btn').style.display = 'block';
+        
+        switchPage('entry', document.getElementById('nav-entry'));
+    }
+
+    function cancelAttendanceEdit() {
+        document.getElementById('att-edit-id').value = '';
+        document.getElementById('att-form-title').innerText = "Daily Attendance & Entry";
+        document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-check"></i> হাজিরা সেভ করুন';
+        document.getElementById('att-cancel-btn').style.display = 'none';
+        document.getElementById('att-date').value = getTodayLocalDateString();
+        onDateChange();
+    }
+
+    async function deleteAttendance(id) {
+        const user = getActiveUser();
+        if(!confirm("আপনি কি এই হাজিরা রেকর্ডটি মুছে ফেলতে চান?")) return;
+        user.attendances = user.attendances.filter(a => a.id !== id);
+        await saveActiveUserToFirebase();
+        renderAll();
+    }
+
+    async function saveReceivedSalary() {
+        const user = getActiveUser();
+        const editId = document.getElementById('recv-edit-id').value;
+        const month = document.getElementById('recv-month').value;
+        const amount = parseFloat(document.getElementById('recv-amount').value) || 0;
+        const note = document.getElementById('recv-note').value;
+
+        if(!month || amount <= 0) {
+            alert("দয়া করে মাস এবং সঠিক পরিমাণ দিন!");
+            return;
+        }
+
+        if(!user.receivedSalaries) user.receivedSalaries = [];
+
+        if (editId) {
+            user.receivedSalaries = user.receivedSalaries.map(s => s.id == editId ? { id: Number(editId), month, amount, note } : s);
+        } else {
+            const existingIndex = user.receivedSalaries.findIndex(s => s.month === month);
+            if(existingIndex > -1) {
+                user.receivedSalaries[existingIndex] = { id: user.receivedSalaries[existingIndex].id, month, amount, note };
+            } else {
+                user.receivedSalaries.push({ id: Date.now(), month, amount, note });
+            }
+        }
+
+        await saveActiveUserToFirebase();
+        cancelReceivedEdit();
+        renderReceivedSalaries();
+        renderAttendanceSummary();
+        alert("প্রাপ্ত বেতনের হিসাব সফলভাবে সেভ/আপডেট করা হয়েছে!");
+    }
+
+    function editReceivedSalary(id) {
+        const user = getActiveUser();
+        const item = user.receivedSalaries.find(s => s.id === id);
+        if(!item) return;
+
+        document.getElementById('recv-edit-id').value = item.id;
+        document.getElementById('recv-month').value = item.month;
+        document.getElementById('recv-amount').value = item.amount;
+        document.getElementById('recv-note').value = item.note || '';
+
+        document.getElementById('recv-form-title').innerHTML = '<i class="fa-solid fa-wallet"></i> প্রাপ্ত বেতন এডিট করুন';
+        document.getElementById('recv-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('recv-cancel-btn').style.display = 'block';
+    }
+
+    function cancelReceivedEdit() {
+        document.getElementById('recv-edit-id').value = '';
+        document.getElementById('recv-form-title').innerHTML = '<i class="fa-solid fa-wallet"></i> মাসিক প্রাপ্ত বেতন হিসাব (Received Salary)';
+        document.getElementById('recv-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> প্রাপ্ত বেতন সেভ করুন';
+        document.getElementById('recv-cancel-btn').style.display = 'none';
+        document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
+        document.getElementById('recv-amount').value = '';
+        document.getElementById('recv-note').value = '';
+    }
+
+    async function deleteReceivedSalary(id) {
+        const user = getActiveUser();
+        if(!confirm("আপনি কি এই প্রাপ্ত বেতনের রেকর্ডটি মুছে ফেলতে চান?")) return;
+        user.receivedSalaries = user.receivedSalaries.filter(s => s.id !== id);
+        await saveActiveUserToFirebase();
+        renderReceivedSalaries();
+        renderAttendanceSummary();
+    }
+
+    function renderReceivedSalaries() {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.receivedSalaries) user.receivedSalaries = [];
+        
+        const tbody = document.getElementById('received-salary-list');
+        tbody.innerHTML = '';
+        
+        user.receivedSalaries.sort((a,b) => b.month.localeCompare(a.month));
+
+        let totalReceived = 0;
+
+        user.receivedSalaries.forEach(s => {
+            totalReceived += s.amount;
+            tbody.innerHTML += `
+                <tr>
+                    <td>${s.month}</td>
+                    <td><b>RM ${s.amount.toFixed(2)}</b></td>
+                    <td>${s.note || '-'}</td>
+                    <td>
+                        <button class="table-action-btn edit" onclick="editReceivedSalary(${s.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteReceivedSalary(${s.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        let formattedReceived = totalReceived.toFixed(2);
+        document.getElementById('total-received-salary').innerText = formattedReceived;
+        document.getElementById('top-total-received').innerText = formattedReceived;
+    }
+
+    function renderAll() {
+        renderAttendanceSummary();
+        renderReceivedSalaries();
+        renderRemittances();
+    }
+
+    function renderAttendanceSummary() {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.attendances) user.attendances = [];
+        
+        const selectedMonth = document.getElementById('summary-filter-month').value;
+        
+        let { start, end } = getCycleDateRange(selectedMonth);
+        if (start && end) {
+            document.getElementById('cycle-range-text').innerText = `হিসাবের চক্র: ${formatDateToDDMMYY(start)} হতে ${formatDateToDDMMYY(end)}`;
+        }
+
+        const listTbody = document.getElementById('attendance-list');
+        listTbody.innerHTML = '';
+
+        let dutyDays = 0, sundayDays = 0, holidayDays = 0, totalOT = 0;
+        let dailyRate = user.settings.basic / (user.settings.days || 1);
+        let hourlyRate = dailyRate / (user.settings.hours || 1);
+        let otRate = hourlyRate * user.settings.otMult;
+        let calculatedSalary = 0;
+
+        user.attendances.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        user.attendances.forEach(item => {
+            const matchesCycle = isDateInCycle(item.date, selectedMonth);
+
+            if (matchesCycle) {
+                const formattedDate = formatDateToDDMMYY(item.date);
+                listTbody.innerHTML += `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${item.day}</td>
+                        <td>${item.inTime}-${item.outTime}</td>
+                        <td>${item.ot}h</td>
+                        <td>${item.type}</td>
+                        <td>
+                            <button class="table-action-btn edit" onclick="editAttendance(${item.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="table-action-btn delete" onclick="deleteAttendance(${item.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+
+                if(item.type === 'Regular') { 
+                    dutyDays++; 
+                    calculatedSalary += dailyRate; 
+                } else if(item.type === 'Sunday') { 
+                    sundayDays++; 
+                    calculatedSalary += (dailyRate * 2); 
+                } else if(item.type === 'Holiday') { 
+                    holidayDays++; 
+                    calculatedSalary += (dailyRate * 3); 
+                }
+
+                totalOT += item.ot;
+                calculatedSalary += (item.ot * otRate);
+            }
+        });
+
+        document.getElementById('stat-duty').innerText = dutyDays;
+        document.getElementById('stat-sunday').innerText = sundayDays;
+        document.getElementById('stat-holiday').innerText = holidayDays;
+        document.getElementById('stat-ot').innerText = totalOT.toFixed(1);
+        
+        let formattedSalary = calculatedSalary.toFixed(2);
+        document.getElementById('total-salary').innerText = formattedSalary;
+        document.getElementById('total-salary-home').innerText = formattedSalary;
+        document.getElementById('top-total-salary').innerText = formattedSalary;
+        document.getElementById('summary-monthly-salary').innerText = formattedSalary;
+
+        let monthlyReceived = 0;
+        if (selectedMonth && user.receivedSalaries) {
+            const foundRecv = user.receivedSalaries.find(s => s.month === selectedMonth);
+            if (foundRecv) {
+                monthlyReceived = foundRecv.amount;
+            }
+        }
+        document.getElementById('summary-monthly-received').innerText = monthlyReceived.toFixed(2);
+
+        let monthlyRemittance = 0;
+        if (selectedMonth && user.remittances) {
+            user.remittances.forEach(r => {
+                if (isDateInCycle(r.date, selectedMonth)) {
+                    let displayAmount = r.amount;
+                    if (r.amount < 100 && r.rate > 100) {
+                        displayAmount = r.rate;
+                    }
+                    monthlyRemittance += displayAmount;
+                }
+            });
+        }
+        document.getElementById('summary-monthly-remittance').innerText = monthlyRemittance.toFixed(2);
+    }
+
+    function calculateBDT() {
+        const amount = parseFloat(document.getElementById('rem-amount').value) || 0;
+        const rate = parseFloat(document.getElementById('rem-rate').value) || 0;
+        document.getElementById('rem-bdt-total').innerText = (amount * rate).toLocaleString('bn-BD', { minimumFractionDigits: 2 });
+    }
+
+    async function saveRemittance() {
+        const user = getActiveUser();
+        const editId = document.getElementById('rem-edit-id').value;
+        const date = document.getElementById('rem-date').value;
+        const amount = parseFloat(document.getElementById('rem-amount').value) || 0;
+        const rate = parseFloat(document.getElementById('rem-rate').value) || 0;
+        const note = document.getElementById('rem-note').value;
+
+        if(!date || amount <= 0) return;
+
+        if(!user.remittances) user.remittances = [];
+
+        const totalBDT = amount * rate;
+        if (editId) {
+            user.remittances = user.remittances.map(r => r.id == editId ? { id: Number(editId), date, amount, rate, totalBDT, note } : r);
+        } else {
+            user.remittances.push({ id: Date.now(), date, amount, rate, totalBDT, note });
+        }
+
+        await saveActiveUserToFirebase();
+        cancelRemittanceEdit();
+        renderRemittances();
+        renderAttendanceSummary();
+        alert("রেমিটেন্স সফলভাবে সেভ/আপডেট করা হয়েছে!");
+    }
+
+    function editRemittance(id) {
+        const user = getActiveUser();
+        const item = user.remittances.find(r => r.id === id);
+        if(!item) return;
+
+        document.getElementById('rem-edit-id').value = item.id;
+        document.getElementById('rem-date').value = item.date;
+        document.getElementById('rem-amount').value = item.amount;
+        document.getElementById('rem-rate').value = item.rate;
+        document.getElementById('rem-note').value = item.note || '';
+        calculateBDT();
+
+        document.getElementById('rem-form-title').innerText = "রেমিটেন্স এডিট করুন";
+        document.getElementById('rem-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('rem-cancel-btn').style.display = 'block';
+    }
+
+    function cancelRemittanceEdit() {
+        document.getElementById('rem-edit-id').value = '';
+        document.getElementById('rem-form-title').innerText = "রেমিটেন্স এন্ট্রি";
+        document.getElementById('rem-save-btn').innerHTML = "রেমিটেন্স সেভ করুন";
+        document.getElementById('rem-cancel-btn').style.display = 'none';
+        document.getElementById('rem-amount').value = '';
+        document.getElementById('rem-rate').value = '';
+        document.getElementById('rem-note').value = '';
+        document.getElementById('rem-bdt-total').innerText = '0.00';
+        document.getElementById('rem-date').value = getTodayLocalDateString();
+    }
+
+    async function deleteRemittance(id) {
+        const user = getActiveUser();
+        if(!confirm("আপনি কি এই রেমিটেন্স রেকর্ডটি মুছে ফেলতে চান?")) return;
+        user.remittances = user.remittances.filter(r => r.id !== id);
+        await saveActiveUserToFirebase();
+        renderRemittances();
+        renderAttendanceSummary();
+    }
+
+    function renderRemittances() {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.remittances) user.remittances = [];
+        
+        const tbody = document.getElementById('remittance-list');
+        tbody.innerHTML = '';
+        user.remittances.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        let totalRemittance = 0;
+
+        user.remittances.forEach(r => {
+            let displayAmount = r.amount;
+            let displayRate = r.rate;
+            
+            if (r.amount < 100 && r.rate > 100) {
+                displayAmount = r.rate;
+                displayRate = r.amount;
+            }
+
+            totalRemittance += displayAmount;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>RM ${displayAmount.toFixed(2)}</td>
+                    <td>${displayRate || '-'}</td>
+                    <td>৳ ${(r.totalBDT || 0).toLocaleString('bn-BD', { minimumFractionDigits: 2 })}</td>
+                    <td>
+                        <button class="table-action-btn edit" onclick="editRemittance(${r.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteRemittance(${r.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('top-total-remittance').innerText = totalRemittance.toFixed(2);
+    }
+
+    function renderProfile() {
+        const user = getActiveUser();
+        if(!user) return;
+        const p = user.profile;
+        const role = (p.email && p.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? 'Admin' : (user.role || 'User');
+        
+        document.getElementById('view-name').innerText = p.name || 'N/A';
+        document.getElementById('view-designation').innerText = p.designation || 'সাধারণ ইউজার';
+        document.getElementById('view-emp-id').innerText = 'ID: ' + (p.empId || 'N/A');
+        
+        document.getElementById('field-name').innerHTML = `${p.name || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('name')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-designation').innerHTML = `${p.designation || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('designation')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-empId').innerHTML = `${p.empId || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('empId')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-company').innerHTML = `${p.company || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('company')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-phone').innerHTML = `${p.phone || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('phone')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-email').innerHTML = `${p.email || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('email')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-passport').innerHTML = `${p.passport || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('passport')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-bankName').innerHTML = `${p.bankName || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankName')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-bankAcc').innerHTML = `${p.bankAcc || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankAcc')"><i class="fa-solid fa-pen"></i></button>`;
+
+        document.getElementById('view-avatar').src = p.avatar || "https://cdn-icons-png.flaticon.com/510/3135/3135715.png";
+
+        const roleSpan = document.getElementById('view-role');
+        roleSpan.innerText = role.toUpperCase();
+        roleSpan.className = 'role-badge ' + (role.toLowerCase() === 'admin' ? 'role-admin' : role.toLowerCase() === 'editor' ? 'role-editor' : role.toLowerCase() === 'moderator' ? 'role-moderator' : 'role-user');
+    }
+
+    async function toggleDarkMode() {
+        const user = getActiveUser();
+        if(!user) return;
+        const isDark = document.getElementById('dark-mode-toggle').checked;
+        if(!user.settings) user.settings = {};
+        user.settings.darkMode = isDark;
+        applyTheme(isDark);
+        await saveActiveUserToFirebase();
+    }
+
+    function applyTheme(isDark) {
+        const slider = document.getElementById('dark-slider');
+        const circle = document.getElementById('dark-circle');
+        if(isDark) {
+            document.body.classList.add('dark-mode');
+            if(slider) slider.style.backgroundColor = '#3b82f6';
+            if(circle) circle.style.transform = 'translateX(22px)';
+            const toggle = document.getElementById('dark-mode-toggle');
+            if(toggle) toggle.checked = true;
+        } else {
+            document.body.classList.remove('dark-mode');
+            if(slider) slider.style.backgroundColor = '#cbd5e1';
+            if(circle) circle.style.transform = 'translateX(0)';
+            const toggle = document.getElementById('dark-mode-toggle');
+            if(toggle) toggle.checked = false;
+        }
+    }
+
+    async function changeLanguage() {
+        const user = getActiveUser();
+        if(!user) return;
+        const langVal = document.getElementById('lang-selector').value;
+        if(!user.settings) user.settings = {};
+        user.settings.lang = langVal;
+        await saveActiveUserToFirebase();
+        alert(langVal === 'en' ? "Language preference saved as English." : "ভাষার পছন্দ সফলভাবে সংরক্ষিত হয়েছে।");
+    }
+
+    function loadActiveUserSettings() {
+        const user = getActiveUser();
+        if(!user) return;
+        const s = user.settings;
+        document.getElementById('cfg-basic').value = s.basic || 1700;
+        document.getElementById('cfg-days').value = s.days || 26;
+        document.getElementById('cfg-hours').value = s.hours || 8;
+        document.getElementById('cfg-ot-mult').value = s.otMult || 1.5;
+        
+        applyTheme(s.darkMode || false);
+        if(s.lang) {
+            document.getElementById('lang-selector').value = s.lang;
+        }
+
+        calculateRatePreview(false);
+    }
+
+    function enableInlineEdit(fieldKey) {
+        const user = getActiveUser();
+        const currentValue = user.profile[fieldKey] || '';
+        const container = document.getElementById('field-' + fieldKey);
+        
+        container.innerHTML = `
+            <input type="text" id="input-${fieldKey}" value="${currentValue}">
+            <button class="inline-edit-btn" style="color:#10b981;" onclick="saveInlineEdit('${fieldKey}')" title="সেভ করুন"><i class="fa-solid fa-check"></i></button>
+            <button class="inline-edit-btn" style="color:#ef4444;" onclick="renderProfile()" title="বাতিল"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        document.getElementById('input-' + fieldKey).focus();
+    }
+
+    async function saveInlineEdit(fieldKey) {
+        const inputVal = document.getElementById('input-' + fieldKey).value.trim();
+        const user = getActiveUser();
+        user.profile[fieldKey] = inputVal;
+        await saveActiveUserToFirebase();
+        renderProfile();
+    }
+
+    function uploadAvatar(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                getActiveUser().profile.avatar = e.target.result;
+                await saveActiveUserToFirebase();
+                renderProfile();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function renderAdminUserList() {
+        if (!isAdmin()) return;
+        const tbody = document.getElementById('admin-user-list');
+        tbody.innerHTML = '';
+        appData.users.forEach(u => {
+            const isUAdmin = (u.profile && u.profile.email && u.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || u.role === 'Admin';
+            const roleStr = isUAdmin ? 'Admin' : (u.role || 'User');
+            const roleClass = roleStr.toLowerCase() === 'admin' ? 'role-admin' : roleStr.toLowerCase() === 'editor' ? 'role-editor' : roleStr.toLowerCase() === 'moderator' ? 'role-moderator' : 'role-user';
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-align: left; padding-left: 6px;">
+                        <b>${u.profile.name}</b><br>
+                        <small style="color:#64748b">${u.profile.email}</small>
+                    </td>
+                    <td><span class="role-badge ${roleClass}">${roleStr}</span></td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="manageUserEntries('${u.id}')" title="এই ইউজারের হাজিরা ও রেমিটেন্স এন্ট্রি ম্যানেজ করুন"><i class="fa-solid fa-folder-open"></i> ম্যানেজ</button>
+                        <button class="table-action-btn edit" onclick="editUserFromAdmin('${u.id}')" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
+                        ${appData.users.length > 1 && u.id !== getLoggedInUser().id ? `<button class="table-action-btn delete" onclick="deleteUserFromAdmin('${u.id}')" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function hideUserForm() {
+        document.getElementById('user-edit-section').classList.add('hidden');
+    }
+
+    function editUserFromAdmin(id) {
+        if(!isAdmin()) { alert("শুধুমাত্র এডমিন রোল পরিবর্তন করতে পারবে!"); return; }
+        const u = appData.users.find(x => x.id === id);
+        if (!u) return;
+        document.getElementById('admin-user-id').value = u.id;
+        document.getElementById('admin-user-name').value = u.profile.name;
+        document.getElementById('admin-user-email').value = u.profile.email || '';
+        document.getElementById('admin-user-role').value = u.role || 'User';
+        
+        document.getElementById('role-select-group').classList.remove('hidden'); 
+        document.getElementById('user-form-title').innerText = 'ইউজার ও রোল পরিবর্তন করুন';
+        document.getElementById('user-edit-section').classList.remove('hidden');
+    }
+
+    async function saveUserFromAdmin() {
+        if(!isAdmin()) { alert("শুধুমাত্র এডমিন সেভ করতে পারবে!"); return; }
+        const id = document.getElementById('admin-user-id').value;
+        const name = document.getElementById('admin-user-name').value.trim();
+        const email = document.getElementById('admin-user-email').value.trim();
+        const role = document.getElementById('admin-user-role').value;
+
+        if(!name || !email) {
+            alert("নাম এবং ইমেইল আবশ্যক!");
+            return;
+        }
+
+        if(id) {
+            const u = appData.users.find(x => x.id == id);
+            if(u) {
+                u.profile.name = name;
+                u.profile.email = email;
+                u.role = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? "Admin" : role; 
+                await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(u.id)), u);
+            }
+        }
+        renderAdminUserList();
+        hideUserForm();
+        alert("ইউজার সফলভাবে আপডেট করা হয়েছে!");
+    }
+
+    async function deleteUserFromAdmin(id) {
+        if(!isAdmin()) { alert("শুধুমাত্র এডমিন ডিলিট করতে পারবে!"); return; }
+        if(!confirm("আপনি কি নিশ্চিত এই ইউজার ডিলিট করতে চান?")) return;
+        
+        await window.fsMethods.deleteDoc(window.fsMethods.doc(window.db, "users", String(id)));
+        appData.users = appData.users.filter(u => u.id !== id);
+        renderAdminUserList();
+    }
+
+    function calculateRatePreview(shouldSave = false) {
+        const basic = parseFloat(document.getElementById('cfg-basic').value) || 0;
+        const days = parseFloat(document.getElementById('cfg-days').value) || 1;
+
+        const regularRate = basic / days;
+        const sundayRate = regularRate * 2;
+        const holidayRate = regularRate * 3;
+
+        document.getElementById('rate-regular').innerText = regularRate.toFixed(2);
+        document.getElementById('rate-sunday').innerText = sundayRate.toFixed(2);
+        document.getElementById('rate-holiday').innerText = holidayRate.toFixed(2);
+
+        if (shouldSave) {
+            saveSettings();
+        }
+    }
+
+    async function saveSettings() {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.settings) user.settings = {};
+        user.settings.basic = parseFloat(document.getElementById('cfg-basic').value) || 0;
+        user.settings.days = parseFloat(document.getElementById('cfg-days').value) || 1;
+        user.settings.hours = parseFloat(document.getElementById('cfg-hours').value) || 1;
+        user.settings.otMult = parseFloat(document.getElementById('cfg-ot-mult').value) || 1;
+
+        await saveActiveUserToFirebase();
+        renderAttendanceSummary();
+    }
+</script>
+
+</body>
+</html>
