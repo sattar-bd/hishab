@@ -473,6 +473,51 @@
             </div>
         </div>
 
+        <!-- বোনাস মডাল (Bonus Modal) -->
+        <div id="bonus-modal" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 450px;">
+                <div class="card-title">
+                    <span id="bonus-form-title"><i class="fa-solid fa-award"></i> মাসিক বোনাস হিসাব</span>
+                    <button class="btn btn-danger btn-sm" onclick="closeBonusModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <input type="hidden" id="bonus-edit-id" value="">
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>মাস নির্বাচন করুন</label>
+                        <input type="month" id="bonus-month" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>বোনাসের পরিমাণ (RM)</label>
+                        <input type="number" step="0.01" id="bonus-amount" class="form-control" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>নোট / বিবরণ (ঐচ্ছিক)</label>
+                    <input type="text" id="bonus-note" class="form-control" placeholder="যেমন: ঈদ বোনাস / পারফরম্যান্স বোনাস">
+                </div>
+                
+                <button class="btn btn-success" id="bonus-save-btn" onclick="saveBonus()"><i class="fa-solid fa-plus"></i> বোনাস সেভ করুন</button>
+                <button class="btn btn-danger" id="bonus-cancel-btn" onclick="cancelBonusEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+
+                <div style="margin-top: 10px; overflow-x:auto; max-height: 200px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>মাস</th>
+                                <th>বোনাস (RM)</th>
+                                <th>নোট</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bonus-salary-list"></tbody>
+                    </table>
+                </div>
+
+                <button class="btn btn-success" style="margin-top: 15px;" onclick="closeBonusModal()">বন্ধ করুন</button>
+            </div>
+        </div>
+
         <!-- সামারি পেজে প্রাপ্ত বেতন খোলার জন্য ছোট বাটন কার্ড -->
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; border: 1px solid #0284c7;">
             <div>
@@ -488,14 +533,17 @@
             <div class="salary-banner">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-file-invoice-dollar" style="font-size: 18px;"></i>
-                    <span style="font-size: 13px; font-weight: 500;">চলতি মাসের বেতন</span>
+                    <span style="font-size: 13px; font-weight: 500;">চলতি মাসের বেতন (বোনাসসহ)</span>
                 </div>
                 <span>RM <span id="total-salary">0.00</span></span>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-title">হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)</div>
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)</span>
+                <button class="btn btn-sm btn-warning" onclick="openBonusModal()"><i class="fa-solid fa-award"></i> বোনাস যুক্ত করুন</button>
+            </div>
             <div style="overflow-x:auto;">
                 <table>
                     <thead>
@@ -835,7 +883,8 @@
                     settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' },
                     attendances: [],
                     remittances: [],
-                    receivedSalaries: []
+                    receivedSalaries: [],
+                    bonuses: []
                 };
                 if(isTargetAdmin) {
                     currentUserDoc.role = "Admin";
@@ -854,6 +903,7 @@
             onDateChange();
             document.getElementById('rem-date').value = getTodayLocalDateString();
             document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('bonus-month').value = new Date().toISOString().slice(0, 7);
             document.getElementById('summary-filter-month').value = new Date().toISOString().slice(0, 7);
 
             document.getElementById('page-login').classList.add('hidden');
@@ -1022,7 +1072,8 @@
                     settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' },
                     attendances: [],
                     remittances: [],
-                    receivedSalaries: []
+                    receivedSalaries: [],
+                    bonuses: []
                 };
                 await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), newUser);
             } else if (currentAuthMode === 'forgot') {
@@ -1122,6 +1173,14 @@
 
     function closeReceivedModal() {
         document.getElementById('received-modal').classList.add('hidden');
+    }
+
+    function openBonusModal() {
+        document.getElementById('bonus-modal').classList.remove('hidden');
+    }
+
+    function closeBonusModal() {
+        document.getElementById('bonus-modal').classList.add('hidden');
     }
 
     function openRemittanceModal() {
@@ -1352,9 +1411,101 @@
         document.getElementById('top-total-received').innerText = formattedReceived;
     }
 
+    async function saveBonus() {
+        const user = getActiveUser();
+        const editId = document.getElementById('bonus-edit-id').value;
+        const month = document.getElementById('bonus-month').value;
+        const amount = parseFloat(document.getElementById('bonus-amount').value) || 0;
+        const note = document.getElementById('bonus-note').value;
+
+        if(!month || amount <= 0) {
+            alert("দয়া করে মাস এবং সঠিক পরিমাণ দিন!");
+            return;
+        }
+
+        if(!user.bonuses) user.bonuses = [];
+
+        if (editId) {
+            user.bonuses = user.bonuses.map(b => b.id == editId ? { id: Number(editId), month, amount, note } : b);
+        } else {
+            const existingIndex = user.bonuses.findIndex(b => b.month === month);
+            if(existingIndex > -1) {
+                user.bonuses[existingIndex] = { id: user.bonuses[existingIndex].id, month, amount, note };
+            } else {
+                user.bonuses.push({ id: Date.now(), month, amount, note });
+            }
+        }
+
+        await saveActiveUserToFirebase();
+        cancelBonusEdit();
+        renderBonuses();
+        renderAttendanceSummary();
+        alert("বোনাসের হিসাব সফলভাবে সেভ/আপডেট করা হয়েছে!");
+    }
+
+    function editBonus(id) {
+        const user = getActiveUser();
+        const item = user.bonuses.find(b => b.id === id);
+        if(!item) return;
+
+        document.getElementById('bonus-edit-id').value = item.id;
+        document.getElementById('bonus-month').value = item.month;
+        document.getElementById('bonus-amount').value = item.amount;
+        document.getElementById('bonus-note').value = item.note || '';
+
+        document.getElementById('bonus-form-title').innerHTML = '<i class="fa-solid fa-award"></i> বোনাস এডিট করুন';
+        document.getElementById('bonus-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('bonus-cancel-btn').style.display = 'block';
+    }
+
+    function cancelBonusEdit() {
+        document.getElementById('bonus-edit-id').value = '';
+        document.getElementById('bonus-form-title').innerHTML = '<i class="fa-solid fa-award"></i> মাসিক বোনাস হিসাব';
+        document.getElementById('bonus-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> বোনাস সেভ করুন';
+        document.getElementById('bonus-cancel-btn').style.display = 'none';
+        document.getElementById('bonus-month').value = new Date().toISOString().slice(0, 7);
+        document.getElementById('bonus-amount').value = '';
+        document.getElementById('bonus-note').value = '';
+    }
+
+    async function deleteBonus(id) {
+        const user = getActiveUser();
+        if(!confirm("আপনি কি এই বোনাসের রেকর্ডটি মুছে ফেলতে চান?")) return;
+        user.bonuses = user.bonuses.filter(b => b.id !== id);
+        await saveActiveUserToFirebase();
+        renderBonuses();
+        renderAttendanceSummary();
+    }
+
+    function renderBonuses() {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.bonuses) user.bonuses = [];
+        
+        const tbody = document.getElementById('bonus-salary-list');
+        tbody.innerHTML = '';
+        
+        user.bonuses.sort((a,b) => b.month.localeCompare(a.month));
+
+        user.bonuses.forEach(b => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${b.month}</td>
+                    <td><b>RM ${b.amount.toFixed(2)}</b></td>
+                    <td>${b.note || '-'}</td>
+                    <td>
+                        <button class="table-action-btn edit" onclick="editBonus(${b.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteBonus(${b.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
     function renderAll() {
         renderAttendanceSummary();
         renderReceivedSalaries();
+        renderBonuses();
         renderRemittances();
     }
 
@@ -1415,6 +1566,16 @@
                 calculatedSalary += (item.ot * otRate);
             }
         });
+
+        // বোনাস যোগ করা হলো
+        let monthlyBonus = 0;
+        if (selectedMonth && user.bonuses) {
+            const foundBonus = user.bonuses.find(b => b.month === selectedMonth);
+            if (foundBonus) {
+                monthlyBonus = foundBonus.amount;
+            }
+        }
+        calculatedSalary += monthlyBonus;
 
         document.getElementById('stat-duty').innerText = dutyDays;
         document.getElementById('stat-sunday').innerText = sundayDays;
@@ -1782,7 +1943,7 @@
         user.settings.hours = parseFloat(document.getElementById('cfg-hours').value) || 1;
         user.settings.otMult = parseFloat(document.getElementById('cfg-ot-mult').value) || 1;
 
-        await saveActiveUserToFirebase();
+        await saveActiveUserDataToFirebase();
         renderAttendanceSummary();
     }
 </script>
