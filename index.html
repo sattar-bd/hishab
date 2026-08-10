@@ -584,6 +584,42 @@
                 <span style="font-size: 13px; font-weight: bold; color: #0284c7;">RM <span id="page-total-remittance">0.00</span></span>
             </div>
         </div>
+
+        <!-- ধার-দেনা (ব্যক্তিগত হিসাব) সেকশন -->
+        <div class="card" style="margin-top: 10px;">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা (ব্যক্তিগত হিসাব)</span>
+                <button class="btn btn-sm btn-success" onclick="openLendBorrowModal()"><i class="fa-solid fa-plus"></i> নতুন হিসাব</button>
+            </div>
+            
+            <!-- সংক্ষিপ্ত হিসাব স্ট্যাটাস -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;">
+                <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; padding: 8px; text-align: center;">
+                    <div style="font-size: 10px; color: #047857; font-weight: bold;">আমি পাবো (পাওনা)</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #059669;">RM <span id="total-lend-given">0.00</span></div>
+                </div>
+                <div style="background: #fef2f2; border: 1px solid #ef4444; border-radius: 6px; padding: 8px; text-align: center;">
+                    <div style="font-size: 10px; color: #b91c1c; font-weight: bold;">আমি দিবো (দেনা)</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #dc2626;">RM <span id="total-borrow-taken">0.00</span></div>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>তারিখ</th>
+                            <th>নাম</th>
+                            <th>ধরন</th>
+                            <th>পরিমাণ (RM)</th>
+                            <th>নোট</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lend-borrow-list"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- রেমিটেন্স মডার্ন মোডাল পপআপ -->
@@ -642,6 +678,50 @@
             </div>
 
             <button class="btn btn-success" style="margin-top: 15px;" onclick="closeRemittanceModal()">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <!-- ধার-দেনা এন্ট্রি মডাল (Lend/Borrow Modal) -->
+    <div id="lend-borrow-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="card-title">
+                <span id="lb-form-title"><i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা এন্ট্রি</span>
+                <button class="btn btn-danger btn-sm" onclick="closeLendBorrowModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="lb-edit-id" value="">
+            
+            <div class="form-group">
+                <label>তারিখ</label>
+                <input type="date" id="lb-date" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>ব্যক্তির নাম</label>
+                <input type="text" id="lb-name" class="form-control" placeholder="কার কাছ থেকে নিলেন বা দিলেন">
+            </div>
+
+            <div class="form-group">
+                <label>লেনদেনের ধরন</label>
+                <select id="lb-type" class="form-control">
+                    <option value="given">আমি টাকা দিয়েছি (সে পাবে / পাওনা)</option>
+                    <option value="taken">আমি টাকা নিয়েছি (আমি দিবো / দেনা)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>পরিমাণ (RM)</label>
+                <input type="number" step="0.01" id="lb-amount" class="form-control" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>নোট / বিবরণ (ঐচ্ছিক)</label>
+                <input type="text" id="lb-note" class="form-control" placeholder="যেমন: ধার বাবদ">
+            </div>
+            
+            <button class="btn btn-success" id="lb-save-btn" onclick="saveLendBorrow()"><i class="fa-solid fa-plus"></i> হিসাব সেভ করুন</button>
+            <button class="btn btn-danger" id="lb-cancel-btn" onclick="cancelLendBorrowEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+
+            <button class="btn btn-success" style="margin-top: 15px;" onclick="closeLendBorrowModal()">বন্ধ করুন</button>
         </div>
     </div>
 
@@ -884,7 +964,8 @@
                     attendances: [],
                     remittances: [],
                     receivedSalaries: [],
-                    bonuses: []
+                    bonuses: [],
+                    lendBorrows: []
                 };
                 if(isTargetAdmin) {
                     currentUserDoc.role = "Admin";
@@ -902,6 +983,7 @@
             document.getElementById('att-date').value = getTodayLocalDateString();
             onDateChange();
             document.getElementById('rem-date').value = getTodayLocalDateString();
+            document.getElementById('lb-date').value = getTodayLocalDateString();
             document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
             document.getElementById('bonus-month').value = new Date().toISOString().slice(0, 7);
             document.getElementById('summary-filter-month').value = new Date().toISOString().slice(0, 7);
@@ -1073,7 +1155,8 @@
                     attendances: [],
                     remittances: [],
                     receivedSalaries: [],
-                    bonuses: []
+                    bonuses: [],
+                    lendBorrows: []
                 };
                 await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), newUser);
             } else if (currentAuthMode === 'forgot') {
@@ -1189,6 +1272,14 @@
 
     function closeRemittanceModal() {
         document.getElementById('remittance-modal').classList.add('hidden');
+    }
+
+    function openLendBorrowModal() {
+        document.getElementById('lend-borrow-modal').classList.remove('hidden');
+    }
+
+    function closeLendBorrowModal() {
+        document.getElementById('lend-borrow-modal').classList.add('hidden');
     }
 
     function onDateChange() {
@@ -1502,11 +1593,120 @@
         });
     }
 
+    // ধার-দেনা (Lend & Borrow) ফাংশনসমূহ
+    async function saveLendBorrow() {
+        const user = getActiveUser();
+        const editId = document.getElementById('lb-edit-id').value;
+        const date = document.getElementById('lb-date').value;
+        const name = document.getElementById('lb-name').value.trim();
+        const type = document.getElementById('lb-type').value;
+        const amount = parseFloat(document.getElementById('lb-amount').value) || 0;
+        const note = document.getElementById('lb-note').value.trim();
+
+        if(!date || !name || amount <= 0) {
+            alert("তারিখ, নাম এবং সঠিক পরিমাণ দিন!");
+            return;
+        }
+
+        if(!user.lendBorrows) user.lendBorrows = [];
+
+        if (editId) {
+            user.lendBorrows = user.lendBorrows.map(item => item.id == editId ? { id: Number(editId), date, name, type, amount, note } : item);
+        } else {
+            user.lendBorrows.push({ id: Date.now(), date, name, type, amount, note });
+        }
+
+        await saveActiveUserToFirebase();
+        cancelLendBorrowEdit();
+        closeLendBorrowModal();
+        renderLendBorrows();
+        alert("হিসাব সফলভাবে সেভ করা হয়েছে!");
+    }
+
+    function editLendBorrow(id) {
+        const user = getActiveUser();
+        const item = user.lendBorrows.find(i => i.id === id);
+        if(!item) return;
+
+        document.getElementById('lb-edit-id').value = item.id;
+        document.getElementById('lb-date').value = item.date;
+        document.getElementById('lb-name').value = item.name;
+        document.getElementById('lb-type').value = item.type;
+        document.getElementById('lb-amount').value = item.amount;
+        document.getElementById('lb-note').value = item.note || '';
+
+        document.getElementById('lb-form-title').innerHTML = '<i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা এডিট করুন';
+        document.getElementById('lb-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('lb-cancel-btn').style.display = 'block';
+        openLendBorrowModal();
+    }
+
+    function cancelLendBorrowEdit() {
+        document.getElementById('lb-edit-id').value = '';
+        document.getElementById('lb-form-title').innerHTML = '<i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা এন্ট্রি';
+        document.getElementById('lb-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> হিসাব সেভ করুন';
+        document.getElementById('lb-cancel-btn').style.display = 'none';
+        document.getElementById('lb-date').value = getTodayLocalDateString();
+        document.getElementById('lb-name').value = '';
+        document.getElementById('lb-amount').value = '';
+        document.getElementById('lb-note').value = '';
+    }
+
+    async function deleteLendBorrow(id) {
+        const user = getActiveUser();
+        if(!confirm("আপনি কি এই হিসাবটি মুছে ফেলতে চান?")) return;
+        user.lendBorrows = user.lendBorrows.filter(i => i.id !== id);
+        await saveActiveUserToFirebase();
+        renderLendBorrows();
+    }
+
+    function renderLendBorrows() {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.lendBorrows) user.lendBorrows = [];
+
+        const tbody = document.getElementById('lend-borrow-list');
+        tbody.innerHTML = '';
+        user.lendBorrows.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        let totalGiven = 0;
+        let totalTaken = 0;
+
+        user.lendBorrows.forEach(item => {
+            if(item.type === 'given') {
+                totalGiven += item.amount;
+            } else {
+                totalTaken += item.amount;
+            }
+
+            const badgeColor = item.type === 'given' ? 'color: #059669; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
+            const typeText = item.type === 'given' ? 'পাওয়া (পাওনা)' : 'দেওয়া (দেনা)';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td><b>${item.name}</b></td>
+                    <td style="${badgeColor}">${typeText}</td>
+                    <td><b>RM ${item.amount.toFixed(2)}</b></td>
+                    <td>${item.note || '-'}</td>
+                    <td>
+                        <button class="table-action-btn edit" onclick="editLendBorrow(${item.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteLendBorrow(${item.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('total-lend-given').innerText = totalGiven.toFixed(2);
+        document.getElementById('total-borrow-taken').innerText = totalTaken.toFixed(2);
+    }
+
     function renderAll() {
         renderAttendanceSummary();
         renderReceivedSalaries();
         renderBonuses();
         renderRemittances();
+        renderLendBorrows();
     }
 
     function renderAttendanceSummary() {
@@ -1943,7 +2143,7 @@
         user.settings.hours = parseFloat(document.getElementById('cfg-hours').value) || 1;
         user.settings.otMult = parseFloat(document.getElementById('cfg-ot-mult').value) || 1;
 
-        await saveActiveUserDataToFirebase();
+        await saveActiveUserToFirebase();
         renderAttendanceSummary();
     }
 </script>
