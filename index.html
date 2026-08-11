@@ -20,9 +20,9 @@
         body.dark-mode .navbar { background: #1e293b; border-top-color: #334155; }
         body.dark-mode .nav-item { color: #94a3b8; }
         body.dark-mode .nav-item.active { color: #3b82f6; }
-        body.dark-mode .top-sum-btn { background: #1e293b; border-color: #334155; color: #f8fafc; }
-        body.dark-mode .top-sum-btn .label { color: #94a3b8; }
-        body.dark-mode .top-sum-btn .value { color: #f8fafc; }
+        body.dark-mode .top-sum-btn { border-color: #334155; color: #f8fafc; }
+        body.dark-mode .top-sum-btn .label { color: rgba(255, 255, 255, 0.85); }
+        body.dark-mode .top-sum-btn .value { color: #fff; }
         body.dark-mode .info-item { border-bottom-color: #334155; }
         body.dark-mode .info-label { color: #94a3b8; }
         body.dark-mode .info-value { color: #f8fafc; }
@@ -103,17 +103,22 @@
             margin-bottom: 8px;
         }
         .top-sum-btn {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 8px 4px;
+            border-radius: 8px;
+            padding: 10px 6px;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             cursor: default;
+            border: none;
+            color: #fff;
         }
+        /* প্রোফেশনাল ৩টি আলাদা গ্রেডিয়েন্ট কালার */
+        .top-sum-btn:nth-child(1) { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .top-sum-btn:nth-child(2) { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        .top-sum-btn:nth-child(3) { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+
         .top-sum-btn .label {
             font-size: 9px;
-            color: #64748b;
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
             display: block;
             margin-bottom: 2px;
@@ -124,7 +129,7 @@
         .top-sum-btn .value {
             font-size: 11px;
             font-weight: 700;
-            color: #0f172a;
+            color: #fff;
         }
 
         .bdt-preview { background: #e0f2fe; color: #0369a1; padding: 8px; border-radius: 6px; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 13px; border: 1px dashed #0284c7; }
@@ -269,13 +274,17 @@
             </div>
         </div>
 
+        <!-- "চলতি মাসের আনুমানিক বেতন" বাটন বাদ দিয়ে নতুন দুটি বাটন (আমি পাবো ও আমি দিবো) যুক্ত করা হলো -->
         <div class="card" style="margin-bottom: 8px;">
-            <div class="salary-banner" style="margin-top: 0;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-file-invoice-dollar" style="font-size: 18px;"></i>
-                    <span style="font-size: 13px; font-weight: 500;">চলতি মাসের আনুমানিক বেতন</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 10px 8px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08);">
+                    <span style="font-size: 9px; color: rgba(255, 255, 255, 0.9); font-weight: 600; display: block; margin-bottom: 2px;">আমি পাবো (পাওনা)</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #fff;">RM <span id="entry-total-lend-given">0.00</span></span>
                 </div>
-                <span>RM <span id="total-salary-home">0.00</span></span>
+                <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 10px 8px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08);">
+                    <span style="font-size: 9px; color: rgba(255, 255, 255, 0.9); font-weight: 600; display: block; margin-bottom: 2px;">আমি দিবো (দেনা)</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #fff;">RM <span id="entry-total-borrow-taken">0.00</span></span>
+                </div>
             </div>
         </div>
 
@@ -307,6 +316,7 @@
                 <select id="day-type" class="form-control" onchange="calculateOT()">
                     <option value="Regular">রেগুলার (Regular Work Day)</option>
                     <option value="Sunday">রবিবার (Sunday - 2x Basic)</option>
+                    <option value="Saturday">শনিবার (Saturday - Half/Full)</option>
                     <option value="Holiday">সরকারি ছুটি (Holiday - 3x Basic)</option>
                 </select>
             </div>
@@ -1332,7 +1342,7 @@
             if (endMinutes > regularEnd) otMinutes += (endMinutes - regularEnd);
         } else if (dayType === 'Saturday' || dayName === 'শনিবার') {
             const satStart = 8 * 60;
-            const satEnd = 14 * 60;
+            const satEnd = 14 * 60; // শনিবার সাধারণত দুপুর ২টা পর্যন্ত ডিউটি ধরা হয়
             if (startMinutes < satStart) otMinutes += (satStart - startMinutes);
             if (endMinutes > satEnd) otMinutes += (endMinutes - satEnd);
         } else {
@@ -1673,7 +1683,9 @@
         if(!user.lendBorrows) user.lendBorrows = [];
 
         const tbody = document.getElementById('lend-borrow-list');
-        tbody.innerHTML = '';
+        if (tbody) {
+            tbody.innerHTML = '';
+        }
         user.lendBorrows.sort((a,b) => new Date(b.date) - new Date(a.date));
 
         let totalGiven = 0;
@@ -1689,23 +1701,31 @@
             const badgeColor = item.type === 'given' ? 'color: #059669; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
             const typeText = item.type === 'given' ? 'পাওয়া (পাওনা)' : 'দেওয়া (দেনা)';
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.date}</td>
-                    <td><b>${item.name}</b></td>
-                    <td style="${badgeColor}">${typeText}</td>
-                    <td><b>RM ${item.amount.toFixed(2)}</b></td>
-                    <td>${item.note || '-'}</td>
-                    <td>
-                        <button class="table-action-btn edit" onclick="editLendBorrow(${item.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="table-action-btn delete" onclick="deleteLendBorrow(${item.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
-                </tr>
-            `;
+            if (tbody) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><b>${item.name}</b></td>
+                        <td style="${badgeColor}">${typeText}</td>
+                        <td><b>RM ${item.amount.toFixed(2)}</b></td>
+                        <td>${item.note || '-'}</td>
+                        <td>
+                            <button class="table-action-btn edit" onclick="editLendBorrow(${item.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="table-action-btn delete" onclick="deleteLendBorrow(${item.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }
         });
 
-        document.getElementById('total-lend-given').innerText = totalGiven.toFixed(2);
-        document.getElementById('total-borrow-taken').innerText = totalTaken.toFixed(2);
+        // রেমিটেন্স পেজ এবং এন্ট্রি পেজ উভয়ের ধার-দেনার ব্যালেন্স আপডেট করা হলো
+        const totalGivenStr = totalGiven.toFixed(2);
+        const totalTakenStr = totalTaken.toFixed(2);
+
+        if (document.getElementById('total-lend-given')) document.getElementById('total-lend-given').innerText = totalGivenStr;
+        if (document.getElementById('total-borrow-taken')) document.getElementById('total-borrow-taken').innerText = totalTakenStr;
+        if (document.getElementById('entry-total-lend-given')) document.getElementById('entry-total-lend-given').innerText = totalGivenStr;
+        if (document.getElementById('entry-total-borrow-taken')) document.getElementById('entry-total-borrow-taken').innerText = totalTakenStr;
     }
 
     function renderAll() {
@@ -1764,6 +1784,9 @@
                 } else if(item.type === 'Sunday') { 
                     sundayDays++; 
                     calculatedSalary += (dailyRate * 2); 
+                } else if(item.type === 'Saturday') { 
+                    dutyDays++; 
+                    calculatedSalary += dailyRate; 
                 } else if(item.type === 'Holiday') { 
                     holidayDays++; 
                     calculatedSalary += (dailyRate * 3); 
@@ -1791,7 +1814,6 @@
         
         let formattedSalary = calculatedSalary.toFixed(2);
         document.getElementById('total-salary').innerText = formattedSalary;
-        document.getElementById('total-salary-home').innerText = formattedSalary;
         document.getElementById('top-total-salary').innerText = formattedSalary;
         document.getElementById('summary-monthly-salary').innerText = formattedSalary;
 
