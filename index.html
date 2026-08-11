@@ -192,7 +192,7 @@
 
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div>ফায়ারবেস থেকে ডাটা লোড হচ্ছে...</div>
+    <div>ডাটা লোড হচ্ছে...</div>
 </div>
 
 <!-- লগিন / রেজিস্টার / পাসওয়ার্ড রিসেট পেজ -->
@@ -876,8 +876,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
-    import { getFirestore, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+    import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCtw_A76P7meDwrEBZ41_6mU-7WGjAbaIo",
@@ -891,8 +891,14 @@
 
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
-    const db = getFirestore(app);
+    
+    // অফলাইন পারসিস্টেন্স বা লোকাল ক্যাশ এনাবল করা হলো (Offline Support)
+    const db = initializeFirestore(app, {
+        localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+    });
+    
     const auth = getAuth(app);
+    setPersistence(auth, browserLocalPersistence);
 
     window.db = db;
     window.auth = auth;
@@ -993,7 +999,8 @@
 
         } catch (error) {
             console.error("Firebase Load Error:", error);
-            document.getElementById('loading-overlay').innerHTML = `<div>ডাটা লোড করতে সমস্যা হয়েছে! ইন্টারনেট কানেকশন চেক করুন।</div>`;
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('page-login').classList.add('hidden');
         }
     }
 
@@ -1003,7 +1010,7 @@
         try {
             await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(user.id)), user);
         } catch (e) {
-            console.error("Firebase Save Error:", e);
+            console.error("Firebase Save Error (Offline Mode):", e);
         }
     }
 
@@ -1167,7 +1174,7 @@
             }
         } catch (error) {
             console.error(error);
-            errDiv.innerText = 'ত্রুটি: ' + (error.message || 'সঠিক তথ্য দিন।');
+            errDiv.innerText = 'ত্রুটি: ইন্টারনেট কানেকশন বা সঠিক তথ্য দিন।';
             errDiv.style.display = 'block';
         }
     }
