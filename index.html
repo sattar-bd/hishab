@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>মাল্টি-ইউজার পে-রোল ও এডমিন সিস্টেম (Firebase Auth)</title>
+    <title>Multi-User Payroll & Admin System (Firebase Auth)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: #f4f6f9; color: #333; padding-bottom: 70px; transition: background 0.3s, color 0.3s; }
         
-        /* ডার্ক মোড স্টাইল ভেরিয়েবল */
+        /* Dark Mode Style Variables */
         body.dark-mode { background-color: #0f172a; color: #f8fafc; }
         body.dark-mode .app-container { background: #1e293b; color: #f8fafc; }
         body.dark-mode .card { background: #1e293b; border-color: #334155; color: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
@@ -28,7 +28,7 @@
         body.dark-mode .info-value { color: #f8fafc; }
         body.dark-mode .info-value input { background: #0f172a; color: #f8fafc; border-color: #3b82f6; }
 
-        /* সামারি পেজের ফিক্সড ডার্ক মোড কালার */
+        /* Summary Page Fixed Dark Mode Colors */
         body.dark-mode #page-summary .card:first-child { background: #1e293b !important; border-color: #334155 !important; }
         body.dark-mode #page-summary .card:first-child #cycle-range-text { color: #94a3b8 !important; }
         body.dark-mode .rate-preview-box { background: #0f172a !important; border-color: #334155 !important; }
@@ -40,7 +40,7 @@
         .content-page { display: none; padding: 8px; }
         .content-page.active { display: block; }
 
-        /* লগিন ও রেজিস্টার পেজ স্টাইল */
+        /* Login & Register Page Styles */
         #page-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
         .login-box { background: #fff; width: 100%; max-width: 380px; padding: 25px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
         .login-box h2 { font-size: 20px; color: #1e293b; margin-bottom: 5px; }
@@ -69,7 +69,7 @@
         .table-action-btn.delete { color: #dc2626; }
         .table-action-btn.delete:hover { background: #fee2e2; }
 
-        /* মোডাল বা পপআপ স্টাইল */
+        /* Modal or Popup Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.7); z-index: 2500;
@@ -111,7 +111,6 @@
             border: none;
             color: #fff;
         }
-        /* প্রোফেশনাল ৩টি আলাদা গ্রেডিয়েন্ট কালার */
         .top-sum-btn:nth-child(1) { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
         .top-sum-btn:nth-child(2) { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
         .top-sum-btn:nth-child(3) { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
@@ -197,270 +196,266 @@
 
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div>ডাটা লোড হচ্ছে...</div>
+    <div data-i18n="loading">Loading data...</div>
 </div>
 
-<!-- লগিন / রেজিস্টার / পাসওয়ার্ড রিসেট পেজ -->
+<!-- Login / Register / Password Reset Page -->
 <div id="page-login" class="hidden">
     <div class="login-box">
         <i class="fa-solid fa-user-lock" style="font-size: 35px; color: #2563eb; margin-bottom: 10px;"></i>
         
-        <!-- ১. লগিন ফর্ম -->
+        <!-- 1. Login Form -->
         <div id="form-login-container">
-            <h2 id="auth-box-title">লগিন করুন</h2>
-            <p id="auth-box-subtitle">সিস্টেমে প্রবেশ করতে ইমেইল ও পাসওয়ার্ড দিন</p>
+            <h2 id="auth-box-title" data-i18n="login">Login</h2>
+            <p id="auth-box-subtitle" data-i18n="login_sub">Enter your email and password to access the system</p>
             
             <div class="form-group" id="group-reg-name" style="display:none;">
-                <label>আপনার নাম</label>
-                <input type="text" id="auth-name" class="form-control" placeholder="পূর্ণ নাম">
+                <label data-i18n="your_name">Your Name</label>
+                <input type="text" id="auth-name" class="form-control" placeholder="Full Name">
             </div>
 
             <div class="form-group">
-                <label>ইমেইল এড্রেস</label>
+                <label data-i18n="email_address">Email Address</label>
                 <input type="email" id="auth-email" class="form-control" placeholder="example@gmail.com">
             </div>
             
             <div class="form-group" id="group-auth-pass">
-                <label>পাসওয়ার্ড</label>
+                <label data-i18n="password">Password</label>
                 <input type="password" id="auth-password" class="form-control" placeholder="******">
             </div>
 
             <div id="auth-error" class="error-msg"></div>
             <div id="auth-success" class="success-msg"></div>
 
-            <button class="btn" style="margin-top: 15px;" id="auth-submit-btn" onclick="handleAuthSubmit()">লগিন করুন</button>
+            <button class="btn" style="margin-top: 15px;" id="auth-submit-btn" onclick="handleAuthSubmit()">Login</button>
             
             <div style="margin-top: 10px; text-align: right;" id="forgot-pass-link-container">
-                <span style="font-size: 11px; color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="switchAuthMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</span>
+                <span style="font-size: 11px; color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="switchAuthMode('forgot')" data-i18n="forgot_pass">Forgot Password?</span>
             </div>
 
             <div class="auth-switch" id="auth-switch-text">
-                একাউন্ট নেই? <span onclick="switchAuthMode('register')">রেজিস্টার করুন</span>
+                Don't have an account? <span onclick="switchAuthMode('register')">Register</span>
             </div>
         </div>
     </div>
 </div>
 
 <div class="app-container">
-    <div class="header">পে-রোল ও এটেন্ডেন্স অ্যাপ</div>
+    <div class="header" data-i18n="app_title">Payroll & Attendance App</div>
     
     <div class="user-switcher-bar">
-        <span><i class="fa-solid fa-user-check"></i> লগইন: <b id="logged-user-name">লোড হচ্ছে...</b></span>
+        <span><i class="fa-solid fa-user-check"></i> <span data-i18n="logged_in">Logged in:</span> <b id="logged-user-name">Loading...</b></span>
         <button onclick="logoutUser()" style="background: #ef4444; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;">
-            <i class="fa-solid fa-right-from-bracket"></i> লগ আউট
+            <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout">Logout</span>
         </button>
     </div>
 
     <div id="managing-banner" class="managing-banner hidden">
-        <span><i class="fa-solid fa-triangle-exclamation"></i> আপনি বর্তমানে <span id="managing-target-name" style="text-decoration: underline;"></span>-এর ডাটা ম্যানেজ করছেন</span>
-        <button class="btn btn-sm btn-warning" onclick="exitManagingUser()" style="margin: 0; width: auto;">ফিরে যান</button>
+        <span><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="managing_data">You are currently managing data for</span> <span id="managing-target-name" style="text-decoration: underline;"></span></span>
+        <button class="btn btn-sm btn-warning" onclick="exitManagingUser()" style="margin: 0; width: auto;" data-i18n="go_back">Go Back</button>
     </div>
 
-    <!-- ১. হাজিরা এন্ট্রি পেজ -->
+    <!-- 1. Attendance Entry Page -->
     <div id="page-entry" class="content-page active">
         
         <div class="top-summary-btns">
             <div class="top-sum-btn">
-                <span class="label">মাসিক বেতন</span>
+                <span class="label" data-i18n="monthly_salary">Monthly Salary</span>
                 <span class="value">RM <span id="top-total-salary">0.00</span></span>
             </div>
             <div class="top-sum-btn">
-                <span class="label">মোট রেমিটেন্স</span>
+                <span class="label" data-i18n="total_remittance">Total Remittance</span>
                 <span class="value">RM <span id="top-total-remittance">0.00</span></span>
             </div>
             <div class="top-sum-btn">
-                <span class="label">প্রাপ্ত বেতন</span>
+                <span class="label" data-i18n="received_salary">Received Salary</span>
                 <span class="value">RM <span id="top-total-received">0.00</span></span>
             </div>
         </div>
 
-        <!-- "চলতি মাসের আনুমানিক বেতন" বাটন বাদ দিয়ে নতুন দুটি বাটন (আমি পাবো ও আমি দিবো) যুক্ত করা হলো -->
         <div class="card" style="margin-bottom: 8px;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
                 <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 10px 8px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08);">
-                    <span style="font-size: 9px; color: rgba(255, 255, 255, 0.9); font-weight: 600; display: block; margin-bottom: 2px;">আমি পাবো (পাওনা)</span>
+                    <span style="font-size: 9px; color: rgba(255, 255, 255, 0.9); font-weight: 600; display: block; margin-bottom: 2px;" data-i18n="receivable">I Will Receive (Receivable)</span>
                     <span style="font-size: 11px; font-weight: 700; color: #fff;">RM <span id="entry-total-lend-given">0.00</span></span>
                 </div>
                 <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 10px 8px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08);">
-                    <span style="font-size: 9px; color: rgba(255, 255, 255, 0.9); font-weight: 600; display: block; margin-bottom: 2px;">আমি দিবো (দেনা)</span>
+                    <span style="font-size: 9px; color: rgba(255, 255, 255, 0.9); font-weight: 600; display: block; margin-bottom: 2px;" data-i18n="payable">I Will Pay (Payable)</span>
                     <span style="font-size: 11px; font-weight: 700; color: #fff;">RM <span id="entry-total-borrow-taken">0.00</span></span>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-title" id="att-form-title">Daily Attendance & Entry</div>
+            <div class="card-title" id="att-form-title" data-i18n="daily_att_entry">Daily Attendance & Entry</div>
             <input type="hidden" id="att-edit-id" value="">
             
             <div class="grid-2">
                 <div class="form-group">
-                    <label>তারিখ</label>
+                    <label data-i18n="date">Date</label>
                     <input type="date" id="att-date" class="form-control" onchange="onDateChange()">
                 </div>
                 <div class="form-group">
-                    <label>দিন (অটো)</label>
+                    <label data-i18n="day_auto">Day (Auto)</label>
                     <select id="att-day" class="form-control" onchange="calculateOT()">
-                        <option value="রবিবার">রবিবার (Sunday)</option>
-                        <option value="সোমবার">সোমবার (Monday)</option>
-                        <option value="মঙ্গলবার">মঙ্গলবার (Tuesday)</option>
-                        <option value="বুধবার">বুধবার (Wednesday)</option>
-                        <option value="বৃহস্পতিবার">বৃহস্পতিবার (Thursday)</option>
-                        <option value="শুক্রবার">শুক্রবার (Friday)</option>
-                        <option value="শনিবার">শনিবার (Saturday)</option>
+                        <option value="Sunday" data-i18n="sunday">Sunday</option>
+                        <option value="Monday" data-i18n="monday">Monday</option>
+                        <option value="Tuesday" data-i18n="tuesday">Tuesday</option>
+                        <option value="Wednesday" data-i18n="wednesday">Wednesday</option>
+                        <option value="Thursday" data-i18n="thursday">Thursday</option>
+                        <option value="Friday" data-i18n="friday">Friday</option>
+                        <option value="Saturday" data-i18n="saturday">Saturday</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>দিনের ধরন (Day Type)</label>
+                <label data-i18n="day_type">Day Type</label>
                 <select id="day-type" class="form-control" onchange="calculateOT()">
-                    <option value="Regular">রেগুলার (Regular Work Day)</option>
-                    <option value="Sunday">রবিবার (Sunday - 2x Basic)</option>
-                    <option value="Saturday">শনিবার (Saturday - Half/Full)</option>
-                    <option value="Holiday">সরকারি ছুটি (Holiday - 3x Basic)</option>
+                    <option value="Regular" data-i18n="dt_regular">Regular Work Day</option>
+                    <option value="Sunday" data-i18n="dt_sunday">Sunday - 2x Basic</option>
+                    <option value="Saturday" data-i18n="dt_saturday">Saturday - Half/Full</option>
+                    <option value="Holiday" data-i18n="dt_holiday">Holiday - 3x Basic</option>
                 </select>
             </div>
 
             <div class="grid-2">
                 <div class="form-group">
-                    <label>In Time</label>
+                    <label data-i18n="in_time">In Time</label>
                     <input type="time" id="in-time" class="form-control" value="08:00" onchange="calculateOT()">
                 </div>
                 <div class="form-group">
-                    <label>Out Time</label>
+                    <label data-i18n="out_time">Out Time</label>
                     <input type="time" id="out-time" class="form-control" value="17:00" onchange="calculateOT()">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>অভারটাইম (ঘণ্টা)</label>
+                <label data-i18n="overtime_hours">Overtime (Hours)</label>
                 <input type="number" step="0.5" id="ot-hours" class="form-control" value="0">
             </div>
 
-            <button class="btn" id="att-save-btn" onclick="saveAttendance()"><i class="fa-solid fa-check"></i> হাজিরা সেভ করুন</button>
-            <button class="btn btn-danger" id="att-cancel-btn" onclick="cancelAttendanceEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+            <button class="btn" id="att-save-btn" onclick="saveAttendance()"><i class="fa-solid fa-check"></i> <span data-i18n="save_attendance">Save Attendance</span></button>
+            <button class="btn btn-danger" id="att-cancel-btn" onclick="cancelAttendanceEdit()" style="display:none; margin-top:6px;" data-i18n="cancel">Cancel</button>
         </div>
     </div>
 
-    <!-- ২. সামারি পেজ -->
+    <!-- 2. Summary Page -->
     <div id="page-summary" class="content-page">
-        <!-- মাস সিলেক্টর ও ফিল্ড সামারি কার্ড -->
         <div class="card" style="background: #f8fafc; border: 1px solid #3b82f6;">
             <div class="card-title">
-                <span><i class="fa-solid fa-calendar-days"></i> মাসিক হিসাব সামারি (২৬ থেকে ২৫ চক্র)</span>
-                <!-- স্যালারি রেট সেটআপ ওপেন করার বাটন -->
-                <button class="btn btn-sm btn-warning" onclick="openRateModal()"><i class="fa-solid fa-sliders"></i> রেট সেটআপ</button>
+                <span><i class="fa-solid fa-calendar-days"></i> <span data-i18n="monthly_account_summary">Monthly Account Summary (26th to 25th Cycle)</span></span>
+                <button class="btn btn-sm btn-warning" onclick="openRateModal()"><i class="fa-solid fa-sliders"></i> <span data-i18n="rate_setup">Rate Setup</span></button>
             </div>
             <div class="form-group">
-                <label>মাস নির্বাচন করুন</label>
+                <label data-i18n="select_month">Select Month</label>
                 <input type="month" id="summary-filter-month" class="form-control" onchange="renderAttendanceSummary()">
             </div>
             <div id="cycle-range-text" style="font-size: 11px; color: #64748b; margin-bottom: 6px; font-weight: bold; text-align: center;"></div>
             
             <div class="grid-2" style="font-size: 11px; line-height: 1.8; margin-top: 8px;">
-                <div>মোট হাজিরা: <b id="stat-duty">0</b> দিন</div>
-                <div>রবিবার ডিউটি: <b id="stat-sunday">0</b> দিন</div>
-                <div>সরকারি ছুটি: <b id="stat-holiday">0</b> দিন</div>
-                <div>মোট OT: <b id="stat-ot">0</b> ঘণ্টা</div>
+                <div><span data-i18n="total_duty">Total Duty:</span> <b id="stat-duty">0</b> <span data-i18n="days">days</span></div>
+                <div><span data-i18n="sunday_duty">Sunday Duty:</span> <b id="stat-sunday">0</b> <span data-i18n="days">days</span></div>
+                <div><span data-i18n="public_holiday">Public Holiday:</span> <b id="stat-holiday">0</b> <span data-i18n="days">days</span></div>
+                <div><span data-i18n="total_ot">Total OT:</span> <b id="stat-ot">0</b> <span data-i18n="hours">hours</span></div>
             </div>
 
-            <!-- ৩টি বক্স এক লাইনে পাশাপাশি (প্রিমিয়াম স্টাইল) -->
             <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
                 <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 6px 4px; border-radius: 6px; text-align: center; box-shadow: 0 2px 5px rgba(5,150,105,0.2);">
-                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;">মাসিক বেতন</div>
+                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;" data-i18n="monthly_salary">Monthly Salary</div>
                     <div style="font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">RM <span id="summary-monthly-salary">0.00</span></div>
                 </div>
                 <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 6px 4px; border-radius: 6px; text-align: center; box-shadow: 0 2px 5px rgba(2,132,199,0.2);">
-                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;">প্রাপ্ত বেতন</div>
+                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;" data-i18n="received_salary">Received Salary</div>
                     <div style="font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">RM <span id="summary-monthly-received">0.00</span></div>
                 </div>
                 <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: white; padding: 6px 4px; border-radius: 6px; text-align: center; box-shadow: 0 2px 5px rgba(217,119,6,0.2);">
-                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;">রেমিটেন্স</div>
+                    <div style="font-size: 9px; opacity: 0.9; margin-bottom: 2px;" data-i18n="remittance">Remittance</div>
                     <div style="font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">RM <span id="summary-monthly-remittance">0.00</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- স্যালারি রেট সেটআপ পপআপ (Modal) -->
+        <!-- Salary Rate Setup Modal -->
         <div id="rate-modal" class="modal-overlay hidden">
             <div class="modal-content">
                 <div class="card-title">
-                    <span><i class="fa-solid fa-sliders"></i> স্যালারি রেট সেটআপ</span>
+                    <span><i class="fa-solid fa-sliders"></i> <span data-i18n="salary_rate_setup">Salary Rate Setup</span></span>
                     <button class="btn btn-danger btn-sm" onclick="closeRateModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 
                 <div class="grid-2">
                     <div class="form-group">
-                        <label>Basic Salary (RM)</label>
+                        <label data-i18n="basic_salary_rm">Basic Salary (RM)</label>
                         <input type="number" id="cfg-basic" class="form-control" value="1700" oninput="calculateRatePreview(true)">
                     </div>
                     <div class="form-group">
-                        <label>মাসিক কর্মদিবস</label>
+                        <label data-i18n="monthly_working_days">Monthly Working Days</label>
                         <input type="number" id="cfg-days" class="form-control" value="26" oninput="calculateRatePreview(true)">
                     </div>
                 </div>
                 
                 <div class="grid-2">
                     <div class="form-group">
-                        <label>দৈনিক ডিউটি (ঘণ্টা)</label>
+                        <label data-i18n="daily_duty_hours">Daily Duty (Hours)</label>
                         <input type="number" id="cfg-hours" class="form-control" value="8" oninput="calculateRatePreview(true)">
                     </div>
                     <div class="form-group">
-                        <label>OT Multiplier (যেমন: 1.5x)</label>
+                        <label data-i18n="ot_multiplier">OT Multiplier (e.g., 1.5x)</label>
                         <input type="number" step="0.1" id="cfg-ot-mult" class="form-control" value="1.5" oninput="calculateRatePreview(true)">
                     </div>
                 </div>
 
                 <div class="rate-preview-box" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px; margin-top: 5px; font-size: 12px; line-height: 1.8;">
                     <div style="display: flex; justify-content: space-between;">
-                        <span>১. রেগুলার ডিউটি (১ গুণ):</span>
+                        <span data-i18n="regular_duty_1x">1. Regular Duty (1x):</span>
                         <b style="color: #0284c7;">RM <span id="rate-regular">0.00</span></b>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span>২. রবিবার ডিউটি (২ গুণ):</span>
+                        <span data-i18n="sunday_duty_2x">2. Sunday Duty (2x):</span>
                         <b style="color: #d97706;">RM <span id="rate-sunday">0.00</span></b>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span>৩. সরকারি ছুটি / হলিডে (৩ গুণ):</span>
+                        <span data-i18n="public_holiday_3x">3. Public Holiday (3x):</span>
                         <b style="color: #dc2626;">RM <span id="rate-holiday">0.00</span></b>
                     </div>
                 </div>
 
-                <button class="btn btn-success" style="margin-top: 10px;" onclick="closeRateModal()">বন্ধ করুন</button>
+                <button class="btn btn-success" style="margin-top: 10px;" onclick="closeRateModal()" data-i18n="close">Close</button>
             </div>
         </div>
 
-        <!-- মাসিক প্রাপ্ত বেতন পপআপ (Received Salary Modal) -->
+        <!-- Received Salary Modal -->
         <div id="received-modal" class="modal-overlay hidden">
             <div class="modal-content" style="max-width: 450px;">
                 <div class="card-title">
-                    <span id="recv-form-title"><i class="fa-solid fa-wallet"></i> মাসিক প্রাপ্ত বেতন হিসাব</span>
+                    <span id="recv-form-title"><i class="fa-solid fa-wallet"></i> <span data-i18n="monthly_received_calc">Monthly Received Salary Calculation</span></span>
                     <button class="btn btn-danger btn-sm" onclick="closeReceivedModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <input type="hidden" id="recv-edit-id" value="">
                 
                 <div class="grid-2">
                     <div class="form-group">
-                        <label>মাস নির্বাচন করুন</label>
+                        <label data-i18n="select_month">Select Month</label>
                         <input type="month" id="recv-month" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>প্রাপ্ত পরিমাণ (RM)</label>
+                        <label data-i18n="received_amount_rm">Received Amount (RM)</label>
                         <input type="number" step="0.01" id="recv-amount" class="form-control" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>নোট (ঐচ্ছিক)</label>
-                    <input type="text" id="recv-note" class="form-control" placeholder="যেমন: ব্যাংকে রিসিভ হয়েছে">
+                    <label data-i18n="note_optional">Note (Optional)</label>
+                    <input type="text" id="recv-note" class="form-control" placeholder="e.g.: Received in bank">
                 </div>
                 
-                <button class="btn btn-success" id="recv-save-btn" onclick="saveReceivedSalary()"><i class="fa-solid fa-plus"></i> প্রাপ্ত বেতন সেভ করুন</button>
-                <button class="btn btn-danger" id="recv-cancel-btn" onclick="cancelReceivedEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+                <button class="btn btn-success" id="recv-save-btn" onclick="saveReceivedSalary()"><i class="fa-solid fa-plus"></i> <span data-i18n="save_received_salary">Save Received Salary</span></button>
+                <button class="btn btn-danger" id="recv-cancel-btn" onclick="cancelReceivedEdit()" style="display:none; margin-top:6px;" data-i18n="cancel">Cancel</button>
 
                 <div class="received-banner">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <i class="fa-solid fa-circle-check" style="font-size: 18px;"></i>
-                        <span style="font-size: 13px; font-weight: 500;">সর্বমোট প্রাপ্ত বেতন</span>
+                        <span style="font-size: 13px; font-weight: 500;" data-i18n="total_received_salary">Total Received Salary</span>
                     </div>
                     <span>RM <span id="total-received-salary">0.00</span></span>
                 </div>
@@ -469,81 +464,80 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>মাস</th>
-                                <th>প্রাপ্ত পরিমাণ (RM)</th>
-                                <th>নোট</th>
-                                <th>অ্যাকশন</th>
+                                <th data-i18n="month">Month</th>
+                                <th data-i18n="received_amount_rm">Received Amount (RM)</th>
+                                <th data-i18n="note">Note</th>
+                                <th data-i18n="action">Action</th>
                             </tr>
                         </thead>
                         <tbody id="received-salary-list"></tbody>
                     </table>
                 </div>
 
-                <button class="btn btn-success" style="margin-top: 15px;" onclick="closeReceivedModal()">বন্ধ করুন</button>
+                <button class="btn btn-success" style="margin-top: 15px;" onclick="closeReceivedModal()" data-i18n="close">Close</button>
             </div>
         </div>
 
-        <!-- বোনাস মডাল (Bonus Modal) -->
+        <!-- Bonus Modal -->
         <div id="bonus-modal" class="modal-overlay hidden">
             <div class="modal-content" style="max-width: 450px;">
                 <div class="card-title">
-                    <span id="bonus-form-title"><i class="fa-solid fa-award"></i> মাসিক বোনাস হিসাব</span>
+                    <span id="bonus-form-title"><i class="fa-solid fa-award"></i> <span data-i18n="monthly_bonus_calc">Monthly Bonus Calculation</span></span>
                     <button class="btn btn-danger btn-sm" onclick="closeBonusModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <input type="hidden" id="bonus-edit-id" value="">
                 
                 <div class="grid-2">
                     <div class="form-group">
-                        <label>মাস নির্বাচন করুন</label>
+                        <label data-i18n="select_month">Select Month</label>
                         <input type="month" id="bonus-month" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>বোনাসের পরিমাণ (RM)</label>
+                        <label data-i18n="bonus_amount_rm">Bonus Amount (RM)</label>
                         <input type="number" step="0.01" id="bonus-amount" class="form-control" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>নোট / বিবরণ (ঐচ্ছিক)</label>
-                    <input type="text" id="bonus-note" class="form-control" placeholder="যেমন: ঈদ বোনাস / পারফরম্যান্স বোনাস">
+                    <label data-i18n="note_description">Note / Description (Optional)</label>
+                    <input type="text" id="bonus-note" class="form-control" placeholder="e.g.: Raya Bonus / Performance Bonus">
                 </div>
                 
-                <button class="btn btn-success" id="bonus-save-btn" onclick="saveBonus()"><i class="fa-solid fa-plus"></i> বোনাস সেভ করুন</button>
-                <button class="btn btn-danger" id="bonus-cancel-btn" onclick="cancelBonusEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+                <button class="btn btn-success" id="bonus-save-btn" onclick="saveBonus()"><i class="fa-solid fa-plus"></i> <span data-i18n="save_bonus">Save Bonus</span></button>
+                <button class="btn btn-danger" id="bonus-cancel-btn" onclick="cancelBonusEdit()" style="display:none; margin-top:6px;" data-i18n="cancel">Cancel</button>
 
                 <div style="margin-top: 10px; overflow-x:auto; max-height: 200px;">
                     <table>
                         <thead>
                             <tr>
-                                <th>মাস</th>
-                                <th>বোনাস (RM)</th>
-                                <th>নোট</th>
-                                <th>অ্যাকশন</th>
+                                <th data-i18n="month">Month</th>
+                                <th data-i18n="bonus_rm">Bonus (RM)</th>
+                                <th data-i18n="note">Note</th>
+                                <th data-i18n="action">Action</th>
                             </tr>
                         </thead>
                         <tbody id="bonus-salary-list"></tbody>
                     </table>
                 </div>
 
-                <button class="btn btn-success" style="margin-top: 15px;" onclick="closeBonusModal()">বন্ধ করুন</button>
+                <button class="btn btn-success" style="margin-top: 15px;" onclick="closeBonusModal()" data-i18n="close">Close</button>
             </div>
         </div>
 
-        <!-- সামারি পেজে প্রাপ্ত বেতন খোলার জন্য ছোট বাটন কার্ড -->
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; border: 1px solid #0284c7;">
             <div>
-                <b style="color: #0369a1; font-size: 12px;"><i class="fa-solid fa-wallet"></i> প্রাপ্ত বেতনের হিসাব তালিকা</b>
-                <div style="font-size: 10px; color: #64748b;">সকল মাসের রিসিভড স্যালারি দেখতে বা এন্ট্রি করতে ক্লিক করুন</div>
+                <b style="color: #0369a1; font-size: 12px;"><i class="fa-solid fa-wallet"></i> <span data-i18n="received_account_list">Received Salary Account List</span></b>
+                <div style="font-size: 10px; color: #64748b;" data-i18n="received_account_sub">Click to view or enter received salary for all months</div>
             </div>
-            <button class="btn btn-sm btn-success" onclick="openReceivedModal()"><i class="fa-solid fa-folder-open"></i> রিসিভড লিস্ট</button>
+            <button class="btn btn-sm btn-success" onclick="openReceivedModal()"><i class="fa-solid fa-folder-open"></i> <span data-i18n="received_list">Received List</span></button>
         </div>
 
         <div class="card">
-            <div class="card-title" id="cycle-title">চলতি মাসের সামারি</div>
+            <div class="card-title" id="cycle-title" data-i18n="current_month_summary">Current Month Summary</div>
             
             <div class="salary-banner">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-file-invoice-dollar" style="font-size: 18px;"></i>
-                    <span style="font-size: 13px; font-weight: 500;">চলতি মাসের বেতন (বোনাসসহ)</span>
+                    <span style="font-size: 13px; font-weight: 500;" data-i18n="current_month_salary_incl_bonus">Current Month Salary (Incl. Bonus)</span>
                 </div>
                 <span>RM <span id="total-salary">0.00</span></span>
             </div>
@@ -551,19 +545,19 @@
 
         <div class="card">
             <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)</span>
-                <button class="btn btn-sm btn-warning" onclick="openBonusModal()"><i class="fa-solid fa-award"></i> বোনাস যুক্ত করুন</button>
+                <span data-i18n="attendance_records">Attendance Records (Selected Month Entry)</span>
+                <button class="btn btn-sm btn-warning" onclick="openBonusModal()"><i class="fa-solid fa-award"></i> <span data-i18n="add_bonus">Add Bonus</span></button>
             </div>
             <div style="overflow-x:auto;">
                 <table>
                     <thead>
                         <tr>
-                            <th>তারিখ</th>
-                            <th>বার</th>
-                            <th>In-Out</th>
-                            <th>OT</th>
-                            <th>টাইপ</th>
-                            <th>অ্যাকশন</th>
+                            <th data-i18n="date">Date</th>
+                            <th data-i18n="day">Day</th>
+                            <th data-i18n="in_out">In-Out</th>
+                            <th data-i18n="ot">OT</th>
+                            <th data-i18n="type">Type</th>
+                            <th data-i18n="action">Action</th>
                         </tr>
                     </thead>
                     <tbody id="attendance-list"></tbody>
@@ -572,44 +566,41 @@
         </div>
     </div>
 
-    <!-- ৩. রেমিটেন্স পেজ -->
+    <!-- 3. Remittance Page -->
     <div id="page-remittance" class="content-page">
         <div class="card" style="text-align: center; padding: 25px 15px;">
             <i class="fa-solid fa-money-bill-transfer" style="font-size: 35px; color: #2563eb; margin-bottom: 10px;"></i>
-            <h3 style="font-size: 16px; margin-bottom: 5px;">রেমিটেন্স ও লেনদেন ইতিহাস</h3>
-            <p style="font-size: 11px; color: #64748b; margin-bottom: 15px;">মোট রেমিটেন্স এবং হিস্ট্রি দেখতে নিচের সার্কেল বাটনে ক্লিক করুন।</p>
+            <h3 style="font-size: 16px; margin-bottom: 5px;" data-i18n="remittance_history_title">Remittance & Transaction History</h3>
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 15px;" data-i18n="remittance_history_sub">Click the circle button below to view total remittance and history.</p>
             
-            <!-- সার্কেল বাটন (Circle Button) -->
             <div style="display: flex; justify-content: center; margin-bottom: 5px;">
                 <button onclick="openRemittanceModal()" style="width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4); transition: transform 0.2s;">
                     <i class="fa-solid fa-folder-open" style="font-size: 20px; margin-bottom: 4px;"></i>
-                    <span style="font-size: 10px; font-weight: bold;">রেমিটেন্স</span>
-                    <span style="font-size: 10px; font-weight: bold;">দেখুন</span>
+                    <span style="font-size: 10px; font-weight: bold;" data-i18n="view">View</span>
+                    <span style="font-size: 10px; font-weight: bold;" data-i18n="remittance">Remittance</span>
                 </button>
             </div>
 
-            <!-- রেমিটেন্স পেজের ভিতরে মোট রেমিটেন্স প্রদর্শন -->
             <div style="margin-top: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 12px; font-weight: 600; color: #475569;"><i class="fa-solid fa-wallet"></i> মোট রেমিটেন্স:</span>
+                <span style="font-size: 12px; font-weight: 600; color: #475569;"><i class="fa-solid fa-wallet"></i> <span data-i18n="total_remittance">Total Remittance:</span></span>
                 <span style="font-size: 13px; font-weight: bold; color: #0284c7;">RM <span id="page-total-remittance">0.00</span></span>
             </div>
         </div>
 
-        <!-- ধার-দেনা (ব্যক্তিগত হিসাব) সেকশন -->
+        <!-- Lend & Borrow (Personal Accounts) Section -->
         <div class="card" style="margin-top: 10px;">
             <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা (ব্যক্তিগত হিসাব)</span>
-                <button class="btn btn-sm btn-success" onclick="openLendBorrowModal()"><i class="fa-solid fa-plus"></i> নতুন হিসাব</button>
+                <span><i class="fa-solid fa-handshake-angle"></i> <span data-i18n="lend_borrow">Lend & Borrow (Personal Accounts)</span></span>
+                <button class="btn btn-sm btn-success" onclick="openLendBorrowModal()"><i class="fa-solid fa-plus"></i> <span data-i18n="new_entry">New Entry</span></button>
             </div>
             
-            <!-- সংক্ষিপ্ত হিসাব স্ট্যাটাস -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;">
                 <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; padding: 8px; text-align: center;">
-                    <div style="font-size: 10px; color: #047857; font-weight: bold;">আমি পাবো (পাওনা)</div>
+                    <div style="font-size: 10px; color: #047857; font-weight: bold;" data-i18n="receivable">I Will Receive (Receivable)</div>
                     <div style="font-size: 13px; font-weight: bold; color: #059669;">RM <span id="total-lend-given">0.00</span></div>
                 </div>
                 <div style="background: #fef2f2; border: 1px solid #ef4444; border-radius: 6px; padding: 8px; text-align: center;">
-                    <div style="font-size: 10px; color: #b91c1c; font-weight: bold;">আমি দিবো (দেনা)</div>
+                    <div style="font-size: 10px; color: #b91c1c; font-weight: bold;" data-i18n="payable">I Will Pay (Payable)</div>
                     <div style="font-size: 13px; font-weight: bold; color: #dc2626;">RM <span id="total-borrow-taken">0.00</span></div>
                 </div>
             </div>
@@ -618,12 +609,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>তারিখ</th>
-                            <th>নাম</th>
-                            <th>ধরন</th>
-                            <th>পরিমাণ (RM)</th>
-                            <th>নোট</th>
-                            <th>অ্যাকশন</th>
+                            <th data-i18n="date">Date</th>
+                            <th data-i18n="name">Name</th>
+                            <th data-i18n="type">Type</th>
+                            <th data-i18n="amount_rm">Amount (RM)</th>
+                            <th data-i18n="note">Note</th>
+                            <th data-i18n="action">Action</th>
                         </tr>
                     </thead>
                     <tbody id="lend-borrow-list"></tbody>
@@ -632,54 +623,54 @@
         </div>
     </div>
 
-    <!-- রেমিটেন্স মডার্ন মোডাল পপআপ -->
+    <!-- Remittance Modern Modal Popup -->
     <div id="remittance-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 550px;">
             <div class="card-title">
-                <span id="rem-form-title"><i class="fa-solid fa-money-bill-transfer"></i> রেমিটেন্স এন্ট্রি ও হিস্ট্রি</span>
+                <span id="rem-form-title"><i class="fa-solid fa-money-bill-transfer"></i> <span data-i18n="remittance_entry_history">Remittance Entry & History</span></span>
                 <button class="btn btn-danger btn-sm" onclick="closeRemittanceModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <input type="hidden" id="rem-edit-id" value="">
             
             <div class="form-group">
-                <label>তারিখ</label>
+                <label data-i18n="date">Date</label>
                 <input type="date" id="rem-date" class="form-control">
             </div>
             
             <div class="grid-2">
                 <div class="form-group">
-                    <label>পরিমাণ (RM)</label>
+                    <label data-i18n="amount_rm">Amount (RM)</label>
                     <input type="number" id="rem-amount" class="form-control" placeholder="0.00" oninput="calculateBDT()">
                 </div>
                 <div class="form-group">
-                    <label>রেট (1 RM = BDT)</label>
-                    <input type="number" step="0.01" id="rem-rate" class="form-control" placeholder="যেমন: 27.5" oninput="calculateBDT()">
+                    <label data-i18n="rate_rm_bdt">Rate (1 RM = BDT)</label>
+                    <input type="number" step="0.01" id="rem-rate" class="form-control" placeholder="e.g.: 27.5" oninput="calculateBDT()">
                 </div>
             </div>
 
             <div class="bdt-preview">
-                বাংলা টাকা: ৳ <span id="rem-bdt-total">0.00</span>
+                <span data-i18n="bdt_total">Bangladeshi Taka:</span> ৳ <span id="rem-bdt-total">0.00</span>
             </div>
 
             <div class="form-group">
-                <label>নোট / বিবরণ</label>
-                <input type="text" id="rem-note" class="form-control" placeholder="যেমন: বাড়িতে পাঠিয়েছি">
+                <label data-i18n="note_description">Note / Description</label>
+                <input type="text" id="rem-note" class="form-control" placeholder="e.g.: Sent home">
             </div>
             
-            <button class="btn" id="rem-save-btn" onclick="saveRemittance()">রেমিটেন্স সেভ করুন</button>
-            <button class="btn btn-danger" id="rem-cancel-btn" onclick="cancelRemittanceEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+            <button class="btn" id="rem-save-btn" onclick="saveRemittance()" data-i18n="save_remittance">Save Remittance</button>
+            <button class="btn btn-danger" id="rem-cancel-btn" onclick="cancelRemittanceEdit()" style="display:none; margin-top:6px;" data-i18n="cancel">Cancel</button>
 
             <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
-                <b style="font-size: 12px; color: #1e293b;"><i class="fa-solid fa-list"></i> পূর্বের রেমিটেন্স হিস্ট্রি</b>
+                <b style="font-size: 12px; color: #1e293b;"><i class="fa-solid fa-list"></i> <span data-i18n="previous_remittance_history">Previous Remittance History</span></b>
                 <div style="overflow-x:auto; max-height: 220px; margin-top: 6px;">
                     <table>
                         <thead>
                             <tr>
-                                <th>তারিখ</th>
-                                <th>পরিমাণ (RM)</th>
-                                <th>রেট</th>
-                                <th>মোট টাকা (BDT)</th>
-                                <th>অ্যাকশন</th>
+                                <th data-i18n="date">Date</th>
+                                <th data-i18n="amount_rm">Amount (RM)</th>
+                                <th data-i18n="rate">Rate</th>
+                                <th data-i18n="total_bdt">Total (BDT)</th>
+                                <th data-i18n="action">Action</th>
                             </tr>
                         </thead>
                         <tbody id="remittance-list"></tbody>
@@ -687,55 +678,55 @@
                 </div>
             </div>
 
-            <button class="btn btn-success" style="margin-top: 15px;" onclick="closeRemittanceModal()">বন্ধ করুন</button>
+            <button class="btn btn-success" style="margin-top: 15px;" onclick="closeRemittanceModal()" data-i18n="close">Close</button>
         </div>
     </div>
 
-    <!-- ধার-দেনা এন্ট্রি মডাল (Lend/Borrow Modal) -->
+    <!-- Lend/Borrow Modal -->
     <div id="lend-borrow-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 450px;">
             <div class="card-title">
-                <span id="lb-form-title"><i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা এন্ট্রি</span>
+                <span id="lb-form-title"><i class="fa-solid fa-handshake-angle"></i> <span data-i18n="lend_borrow_entry">Lend & Borrow Entry</span></span>
                 <button class="btn btn-danger btn-sm" onclick="closeLendBorrowModal()" style="margin:0; width:auto;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <input type="hidden" id="lb-edit-id" value="">
             
             <div class="form-group">
-                <label>তারিখ</label>
+                <label data-i18n="date">Date</label>
                 <input type="date" id="lb-date" class="form-control">
             </div>
 
             <div class="form-group">
-                <label>ব্যক্তির নাম</label>
-                <input type="text" id="lb-name" class="form-control" placeholder="কার কাছ থেকে নিলেন বা দিলেন">
+                <label data-i18n="person_name">Person's Name</label>
+                <input type="text" id="lb-name" class="form-control" placeholder="From whom you took or gave">
             </div>
 
             <div class="form-group">
-                <label>লেনদেনের ধরন</label>
+                <label data-i18n="transaction_type">Transaction Type</label>
                 <select id="lb-type" class="form-control">
-                    <option value="given">আমি টাকা দিয়েছি (সে পাবে / পাওনা)</option>
-                    <option value="taken">আমি টাকা নিয়েছি (আমি দিবো / দেনা)</option>
+                    <option value="given" data-i18n="i_gave_money">I gave money (Receivable)</option>
+                    <option value="taken" data-i18n="i_took_money">I took money (Payable)</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>পরিমাণ (RM)</label>
+                <label data-i18n="amount_rm">Amount (RM)</label>
                 <input type="number" step="0.01" id="lb-amount" class="form-control" placeholder="0.00">
             </div>
 
             <div class="form-group">
-                <label>নোট / বিবরণ (ঐচ্ছিক)</label>
-                <input type="text" id="lb-note" class="form-control" placeholder="যেমন: ধার বাবদ">
+                <label data-i18n="note_description">Note / Description (Optional)</label>
+                <input type="text" id="lb-note" class="form-control" placeholder="e.g.: As a loan">
             </div>
             
-            <button class="btn btn-success" id="lb-save-btn" onclick="saveLendBorrow()"><i class="fa-solid fa-plus"></i> হিসাব সেভ করুন</button>
-            <button class="btn btn-danger" id="lb-cancel-btn" onclick="cancelLendBorrowEdit()" style="display:none; margin-top:6px;">বাতিল</button>
+            <button class="btn btn-success" id="lb-save-btn" onclick="saveLendBorrow()"><i class="fa-solid fa-plus"></i> <span data-i18n="save_entry">Save Entry</span></button>
+            <button class="btn btn-danger" id="lb-cancel-btn" onclick="cancelLendBorrowEdit()" style="display:none; margin-top:6px;" data-i18n="cancel">Cancel</button>
 
-            <button class="btn btn-success" style="margin-top: 15px;" onclick="closeLendBorrowModal()">বন্ধ করুন</button>
+            <button class="btn btn-success" style="margin-top: 15px;" onclick="closeLendBorrowModal()" data-i18n="close">Close</button>
         </div>
     </div>
 
-    <!-- ৪. প্রোফাইল পেজ -->
+    <!-- 4. Profile Page -->
     <div id="page-profile" class="content-page">
         <div class="profile-header-card">
             <div class="profile-avatar-container">
@@ -743,20 +734,19 @@
                 <label for="avatar-input" class="avatar-edit-icon"><i class="fa-solid fa-camera"></i></label>
                 <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="uploadAvatar(event)">
             </div>
-            <div class="profile-name" id="view-name">লোড হচ্ছে...</div>
+            <div class="profile-name" id="view-name">Loading...</div>
             <div class="profile-designation" id="view-designation"></div>
             <div class="profile-badge" id="view-emp-id"></div>
             <div style="margin-top: 5px;"><span id="view-role" class="role-badge role-user">USER</span></div>
         </div>
 
-        <!-- অ্যাপ প্রিফারেন্স বা সেটিংস কার্ড (ডার্ক মোড ও ভাষা সিলেক্ট) -->
         <div class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-gear"></i> অ্যাপ সেটিংস (Preferences)</span>
+                <span><i class="fa-solid fa-gear"></i> <span data-i18n="app_preferences">App Preferences (Settings)</span></span>
             </div>
             <ul class="info-list">
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-moon"></i> ডার্ক মোড (Dark Mode)</span>
+                    <span class="info-label"><i class="fa-solid fa-moon"></i> <span data-i18n="dark_mode">Dark Mode</span></span>
                     <span class="info-value">
                         <label style="position: relative; display: inline-block; width: 44px; height: 22px; cursor: pointer;">
                             <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()" style="opacity: 0; width: 0; height: 0;">
@@ -766,11 +756,11 @@
                     </span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-globe"></i> ভাষা নির্বাচন (Language)</span>
+                    <span class="info-label"><i class="fa-solid fa-globe"></i> <span data-i18n="language_selection">Language Selection</span></span>
                     <span class="info-value">
                         <select id="lang-selector" class="form-control" style="width: 110px; padding: 4px;" onchange="changeLanguage()">
                             <option value="bn">বাংলা (Bangla)</option>
-                            <option value="en">English</option>
+                            <option value="en" selected>English</option>
                         </select>
                     </span>
                 </li>
@@ -779,86 +769,86 @@
 
         <div class="card">
             <div class="card-title">
-                <span><i class="fa-solid fa-id-card"></i> ইউজার ইনফরমেশন</span>
-                <span style="font-size: 10px; color: #64748b;">আইকনে ক্লিক করে সরাসরি এডিট করুন</span>
+                <span><i class="fa-solid fa-id-card"></i> <span data-i18n="user_information">User Information</span></span>
+                <span style="font-size: 10px; color: #64748b;" data-i18n="click_icon_edit">Click icon to edit directly</span>
             </div>
             <ul class="info-list">
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-user"></i> নাম</span>
+                    <span class="info-label"><i class="fa-solid fa-user"></i> <span data-i18n="name_label">Name</span></span>
                     <span class="info-value" id="field-name">- <button class="inline-edit-btn" onclick="enableInlineEdit('name')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-briefcase"></i> পদবি</span>
+                    <span class="info-label"><i class="fa-solid fa-briefcase"></i> <span data-i18n="designation_label">Designation</span></span>
                     <span class="info-value" id="field-designation">- <button class="inline-edit-btn" onclick="enableInlineEdit('designation')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-id-badge"></i> এমপ্লয়ি আইডি</span>
+                    <span class="info-label"><i class="fa-solid fa-id-badge"></i> <span data-i18n="employee_id_label">Employee ID</span></span>
                     <span class="info-value" id="field-empId">- <button class="inline-edit-btn" onclick="enableInlineEdit('empId')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-building"></i> কোম্পানি</span>
+                    <span class="info-label"><i class="fa-solid fa-building"></i> <span data-i18n="company_label">Company</span></span>
                     <span class="info-value" id="field-company">- <button class="inline-edit-btn" onclick="enableInlineEdit('company')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-phone"></i> মোবাইল</span>
+                    <span class="info-label"><i class="fa-solid fa-phone"></i> <span data-i18n="mobile_label">Mobile</span></span>
                     <span class="info-value" id="field-phone">- <button class="inline-edit-btn" onclick="enableInlineEdit('phone')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-envelope"></i> ইমেইল</span>
+                    <span class="info-label"><i class="fa-solid fa-envelope"></i> <span data-i18n="email_label">Email</span></span>
                     <span class="info-value" id="field-email">- <button class="inline-edit-btn" onclick="enableInlineEdit('email')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-passport"></i> পাসপোর্ট</span>
+                    <span class="info-label"><i class="fa-solid fa-passport"></i> <span data-i18n="passport_label">Passport</span></span>
                     <span class="info-value" id="field-passport">- <button class="inline-edit-btn" onclick="enableInlineEdit('passport')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-building-columns"></i> ব্যাংক</span>
+                    <span class="info-label"><i class="fa-solid fa-building-columns"></i> <span data-i18n="bank_label">Bank</span></span>
                     <span class="info-value" id="field-bankName">- <button class="inline-edit-btn" onclick="enableInlineEdit('bankName')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
                 <li class="info-item">
-                    <span class="info-label"><i class="fa-solid fa-credit-card"></i> অ্যাকাউন্ট</span>
+                    <span class="info-label"><i class="fa-solid fa-credit-card"></i> <span data-i18n="account_label">Account</span></span>
                     <span class="info-value" id="field-bankAcc">- <button class="inline-edit-btn" onclick="enableInlineEdit('bankAcc')"><i class="fa-solid fa-pen"></i></button></span>
                 </li>
             </ul>
         </div>
     </div>
 
-    <!-- ৫. এডমিন পেজ (শুধু এডমিনদের জন্য দৃশ্যমান) -->
+    <!-- 5. Admin Page -->
     <div id="page-admin" class="content-page">
         <div id="admin-content">
             <div class="card">
                 <div class="card-title">
-                    <span><i class="fa-solid fa-users-gear"></i> ইউজার ও রোল ম্যানেজমেন্ট</span>
+                    <span><i class="fa-solid fa-users-gear"></i> <span data-i18n="user_role_mgmt">User & Role Management</span></span>
                 </div>
 
                 <div id="user-edit-section" class="hidden" style="background:#f1f5f9; padding:8px; border-radius:6px; margin-bottom:10px;">
-                    <h5 id="user-form-title" style="margin-bottom:8px; font-size:12px;">ইউজার এডিট করুন</h5>
+                    <h5 id="user-form-title" style="margin-bottom:8px; font-size:12px;" data-i18n="edit_user">Edit User</h5>
                     <input type="hidden" id="admin-user-id">
                     
-                    <div class="form-group"><label>নাম *</label><input type="text" id="admin-user-name" class="form-control" placeholder="ইউজারের নাম"></div>
-                    <div class="form-group"><label>ইমেইল *</label><input type="email" id="admin-user-email" class="form-control" placeholder="user@example.com"></div>
+                    <div class="form-group"><label data-i18n="name_req">Name *</label><input type="text" id="admin-user-name" class="form-control" placeholder="User Name"></div>
+                    <div class="form-group"><label data-i18n="email_req">Email *</label><input type="email" id="admin-user-email" class="form-control" placeholder="user@example.com"></div>
 
                     <div id="role-select-group" class="form-group">
-                        <label>ইউজার রোল (Role)</label>
+                        <label data-i18n="user_role">User Role</label>
                         <select id="admin-user-role" class="form-control">
-                            <option value="User">User (সাধারণ ইউজার)</option>
-                            <option value="Admin">Admin (এডমিন - পূর্ণ এক্সেস)</option>
-                            <option value="Editor">Editor (এডিটর)</option>
-                            <option value="Moderator">Moderator (মডারেটর)</option>
+                            <option value="User" data-i18n="role_user">User (Standard User)</option>
+                            <option value="Admin" data-i18n="role_admin">Admin (Full Access)</option>
+                            <option value="Editor" data-i18n="role_editor">Editor</option>
+                            <option value="Moderator" data-i18n="role_moderator">Moderator</option>
                         </select>
                     </div>
 
-                    <button class="btn btn-sm" onclick="saveUserFromAdmin()">সেভ করুন</button>
-                    <button class="btn btn-danger btn-sm" onclick="hideUserForm()">বাতিল</button>
+                    <button class="btn btn-sm" onclick="saveUserFromAdmin()" data-i18n="save">Save</button>
+                    <button class="btn btn-danger btn-sm" onclick="hideUserForm()" data-i18n="cancel">Cancel</button>
                 </div>
 
                 <div style="overflow-x:auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>নাম ও ইমেইল</th>
-                                <th>রোল (Role)</th>
-                                <th>অ্যাকশন</th>
+                                <th data-i18n="name_email">Name & Email</th>
+                                <th data-i18n="role">Role</th>
+                                <th data-i18n="action">Action</th>
                             </tr>
                         </thead>
                         <tbody id="admin-user-list"></tbody>
@@ -868,17 +858,16 @@
         </div>
     </div>
 
-    <a href="https://wa.me/60165251783" class="whatsapp-float" target="_blank" title="WhatsApp এ যোগাযোগ করুন">
+    <a href="https://wa.me/60165251783" class="whatsapp-float" target="_blank" title="Contact on WhatsApp">
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
     <div class="navbar">
-        <div class="nav-item active" id="nav-entry" onclick="switchPage('entry', this)"><i class="fa-solid fa-calendar-plus"></i>এন্ট্রি</div>
-        <div class="nav-item" id="nav-summary" onclick="switchPage('summary', this)"><i class="fa-solid fa-chart-pie"></i>সামারি</div>
-        <div class="nav-item" id="nav-remittance" onclick="switchPage('remittance', this)"><i class="fa-solid fa-money-bill-transfer"></i>রেমিটেন্স</div>
-        <div class="nav-item" id="nav-profile" onclick="switchPage('profile', this)"><i class="fa-solid fa-user"></i>প্রোফাইল</div>
-        <!-- এডমিন নেভবার আইটেম (ডিফল্ট hidden রাখা হয়েছে যাতে সাধারণ ইউজার দেখতে না পারে) -->
-        <div class="nav-item hidden" id="nav-admin" onclick="switchPage('admin', this)"><i class="fa-solid fa-user-shield"></i>এডমিন</div>
+        <div class="nav-item active" id="nav-entry" onclick="switchPage('entry', this)"><i class="fa-solid fa-calendar-plus"></i><span data-i18n="nav_entry">Entry</span></div>
+        <div class="nav-item" id="nav-summary" onclick="switchPage('summary', this)"><i class="fa-solid fa-chart-pie"></i><span data-i18n="nav_summary">Summary</span></div>
+        <div class="nav-item" id="nav-remittance" onclick="switchPage('remittance', this)"><i class="fa-solid fa-money-bill-transfer"></i><span data-i18n="nav_remittance">Remittance</span></div>
+        <div class="nav-item" id="nav-profile" onclick="switchPage('profile', this)"><i class="fa-solid fa-user"></i><span data-i18n="nav_profile">Profile</span></div>
+        <div class="nav-item hidden" id="nav-admin" onclick="switchPage('admin', this)"><i class="fa-solid fa-user-shield"></i><span data-i18n="nav_admin">Admin</span></div>
     </div>
 </div>
 
@@ -902,7 +891,6 @@
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     
-    // অফলাইন পারসিস্টেন্স বা লোকাল ক্যাশ এনাবল করা হলো (Offline Support)
     const db = initializeFirestore(app, {
         localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
     });
@@ -928,7 +916,286 @@
 </script>
 
 <script>
-    const dayNames = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+    const translations = {
+        en: {
+            loading: "Loading data...",
+            login: "Login",
+            login_sub: "Enter your email and password to access the system",
+            your_name: "Your Name",
+            email_address: "Email Address",
+            password: "Password",
+            forgot_pass: "Forgot Password?",
+            app_title: "Payroll & Attendance App",
+            logged_in: "Logged in:",
+            logout: "Logout",
+            managing_data: "You are currently managing data for",
+            go_back: "Go Back",
+            monthly_salary: "Monthly Salary",
+            total_remittance: "Total Remittance",
+            received_salary: "Received Salary",
+            receivable: "I Will Receive (Receivable)",
+            payable: "I Will Pay (Payable)",
+            daily_att_entry: "Daily Attendance & Entry",
+            date: "Date",
+            day_auto: "Day (Auto)",
+            sunday: "Sunday",
+            monday: "Monday",
+            tuesday: "Tuesday",
+            wednesday: "Wednesday",
+            thursday: "Thursday",
+            friday: "Friday",
+            saturday: "Saturday",
+            day_type: "Day Type",
+            dt_regular: "Regular Work Day",
+            dt_sunday: "Sunday - 2x Basic",
+            dt_saturday: "Saturday - Half/Full",
+            dt_holiday: "Holiday - 3x Basic",
+            in_time: "In Time",
+            out_time: "Out Time",
+            overtime_hours: "Overtime (Hours)",
+            save_attendance: "Save Attendance",
+            cancel: "Cancel",
+            monthly_account_summary: "Monthly Account Summary (26th to 25th Cycle)",
+            rate_setup: "Rate Setup",
+            select_month: "Select Month",
+            total_duty: "Total Duty:",
+            sunday_duty: "Sunday Duty:",
+            public_holiday: "Public Holiday:",
+            total_ot: "Total OT:",
+            days: "days",
+            hours: "hours",
+            salary_rate_setup: "Salary Rate Setup",
+            basic_salary_rm: "Basic Salary (RM)",
+            monthly_working_days: "Monthly Working Days",
+            daily_duty_hours: "Daily Duty (Hours)",
+            ot_multiplier: "OT Multiplier (e.g., 1.5x)",
+            regular_duty_1x: "1. Regular Duty (1x):",
+            sunday_duty_2x: "2. Sunday Duty (2x):",
+            public_holiday_3x: "3. Public Holiday (3x):",
+            close: "Close",
+            monthly_received_calc: "Monthly Received Salary Calculation",
+            received_amount_rm: "Received Amount (RM)",
+            note_optional: "Note (Optional)",
+            save_received_salary: "Save Received Salary",
+            total_received_salary: "Total Received Salary",
+            month: "Month",
+            note: "Note",
+            action: "Action",
+            monthly_bonus_calc: "Monthly Bonus Calculation",
+            bonus_amount_rm: "Bonus Amount (RM)",
+            note_description: "Note / Description (Optional)",
+            save_bonus: "Save Bonus",
+            bonus_rm: "Bonus (RM)",
+            received_account_list: "Received Salary Account List",
+            received_account_sub: "Click to view or enter received salary for all months",
+            received_list: "Received List",
+            current_month_summary: "Current Month Summary",
+            current_month_salary_incl_bonus: "Current Month Salary (Incl. Bonus)",
+            attendance_records: "Attendance Records (Selected Month Entry)",
+            add_bonus: "Add Bonus",
+            day: "Day",
+            in_out: "In-Out",
+            ot: "OT",
+            type: "Type",
+            remittance_history_title: "Remittance & Transaction History",
+            remittance_history_sub: "Click the circle button below to view total remittance and history.",
+            view: "View",
+            remittance: "Remittance",
+            lend_borrow: "Lend & Borrow (Personal Accounts)",
+            new_entry: "New Entry",
+            name: "Name",
+            amount_rm: "Amount (RM)",
+            remittance_entry_history: "Remittance Entry & History",
+            rate_rm_bdt: "Rate (1 RM = BDT)",
+            bdt_total: "Bangladeshi Taka:",
+            save_remittance: "Save Remittance",
+            previous_remittance_history: "Previous Remittance History",
+            rate: "Rate",
+            total_bdt: "Total (BDT)",
+            lend_borrow_entry: "Lend & Borrow Entry",
+            person_name: "Person's Name",
+            transaction_type: "Transaction Type",
+            i_gave_money: "I gave money (Receivable)",
+            i_took_money: "I took money (Payable)",
+            save_entry: "Save Entry",
+            app_preferences: "App Preferences (Settings)",
+            dark_mode: "Dark Mode",
+            language_selection: "Language Selection",
+            user_information: "User Information",
+            click_icon_edit: "Click icon to edit directly",
+            name_label: "Name",
+            designation_label: "Designation",
+            employee_id_label: "Employee ID",
+            company_label: "Company",
+            mobile_label: "Mobile",
+            email_label: "Email",
+            passport_label: "Passport",
+            bank_label: "Bank",
+            account_label: "Account",
+            user_role_mgmt: "User & Role Management",
+            edit_user: "Edit User",
+            name_req: "Name *",
+            email_req: "Email *",
+            user_role: "User Role",
+            role_user: "User (Standard User)",
+            role_admin: "Admin (Full Access)",
+            role_editor: "Editor",
+            role_moderator: "Moderator",
+            save: "Save",
+            name_email: "Name & Email",
+            role: "Role",
+            nav_entry: "Entry",
+            nav_summary: "Summary",
+            nav_remittance: "Remittance",
+            nav_profile: "Profile",
+            nav_admin: "Admin"
+        },
+        bn: {
+            loading: "তথ্য লোড হচ্ছে...",
+            login: "লগইন",
+            login_sub: "সিস্টেমে প্রবেশ করতে আপনার ইমেইল ও পাসওয়ার্ড দিন",
+            your_name: "আপনার নাম",
+            email_address: "ইমেইল এড্রেস",
+            password: "পাসওয়ার্ড",
+            forgot_pass: "পাসওয়ার্ড ভুলে গেছেন?",
+            app_title: "পেরোল ও হাজিরা অ্যাপ",
+            logged_in: "লগইন আছেন:",
+            logout: "লগআউট",
+            managing_data: "আপনি বর্তমানে যার ডেটা পরিচালনা করছেন:",
+            go_back: "ফিরে যান",
+            monthly_salary: "মাসিক বেতন",
+            total_remittance: "মোট রেমিট্যান্স",
+            received_salary: "প্রাপ্ত বেতন",
+            receivable: "পাবো (পাওনা)",
+            payable: "দিবো (দেনা)",
+            daily_att_entry: "দৈনিক হাজিরা ও এন্ট্রি",
+            date: "তারিখ",
+            day_auto: "বার (স্বয়ংক্রিয়)",
+            sunday: "রবিবার",
+            monday: "সোমবার",
+            tuesday: "মঙ্গলবার",
+            wednesday: "বুধবার",
+            thursday: "বৃহ্স্পতিবার",
+            friday: "শুক্রবার",
+            saturday: "শনিবার",
+            day_type: "দিনের ধরণ",
+            dt_regular: "নিয়মিত কাজের দিন",
+            dt_sunday: "রবিবার - দ্বিগুণ বেসিক",
+            dt_saturday: "শনিবার - অর্ধেক/পূর্ণ",
+            dt_holiday: "ছুটির দিন - তিনগুণ বেসিক",
+            in_time: "আসার সময়",
+            out_time: "যাওয়ার সময়",
+            overtime_hours: "ওভারটাইম (ঘণ্টা)",
+            save_attendance: "হাজিরা সংরক্ষণ করুন",
+            cancel: "বাতিল",
+            monthly_account_summary: "মাসিক হিসাব সারসংক্ষেপ (২৬ থেকে ২৫ তারিখ সাইকেল)",
+            rate_setup: "রেট সেটআপ",
+            select_month: "মাস নির্বাচন করুন",
+            total_duty: "মোট ডিউটি:",
+            sunday_duty: "রবিবার ডিউটি:",
+            public_holiday: "সরকারি ছুটি:",
+            total_ot: "মোট ওটি:",
+            days: "দিন",
+            hours: "ঘণ্টা",
+            salary_rate_setup: "বেতনের রেট সেটআপ",
+            basic_salary_rm: "বেসিক বেতন (রিঙ্গিত)",
+            monthly_working_days: "মাসিক কর্মদিবস",
+            daily_duty_hours: "দৈনিক ডিউটি (ঘণ্টা)",
+            ot_multiplier: "ওটি গুণক (যেমন: 1.5x)",
+            regular_duty_1x: "১. নিয়মিত ডিউটি (1x):",
+            sunday_duty_2x: "২. রবিবার ডিউটি (2x):",
+            public_holiday_3x: "৩. সরকারি ছুটি (3x):",
+            close: "বন্ধ করুন",
+            monthly_received_calc: "মাসিক প্রাপ্ত বেতন হিসাব",
+            received_amount_rm: "প্রাপ্ত পরিমাণ (রিঙ্গিত)",
+            note_optional: "নোট (ঐচ্ছিক)",
+            save_received_salary: "প্রাপ্ত বেতন সংরক্ষণ করুন",
+            total_received_salary: "মোট প্রাপ্ত বেতন",
+            month: "মাস",
+            note: "নোট",
+            action: "কার্যক্রম",
+            monthly_bonus_calc: "মাসিক বোনাস হিসাব",
+            bonus_amount_rm: "বোনাসের পরিমাণ (রিঙ্গিত)",
+            note_description: "নোট / বিবরণ (ঐচ্ছিক)",
+            save_bonus: "বোনাস সংরক্ষণ করুন",
+            bonus_rm: "বোনাস (রিঙ্গিত)",
+            received_account_list: "প্রাপ্ত বেতনের হিসাব তালিকা",
+            received_account_sub: "সকল মাসের প্রাপ্ত বেতন দেখতে বা এন্ট্রি করতে ক্লিক করুন",
+            received_list: "প্রাপ্ত তালিকা",
+            current_month_summary: "চলতি মাসের সারসংক্ষেপ",
+            current_month_salary_incl_bonus: "চলতি মাসের বেতন (বোনাসসহ)",
+            attendance_records: "হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)",
+            add_bonus: "বোনাস যোগ করুন",
+            day: "বার",
+            in_out: "ইন-আউট",
+            ot: "ওটি",
+            type: "ধরণ",
+            remittance_history_title: "রেমিট্যান্স ও লেনদেনের ইতিহাস",
+            remittance_history_sub: "মোট রেমিট্যান্স এবং ইতিহাস দেখতে নিচের গোল বাটনে ক্লিক করুন।",
+            view: "দেখুন",
+            remittance: "রেমিট্যান্স",
+            lend_borrow: "ধার দেওয়া ও নেওয়া (ব্যক্তিগত হিসাব)",
+            new_entry: "নতুন এন্ট্রি",
+            name: "নাম",
+            amount_rm: "পরিমাণ (রিঙ্গিত)",
+            remittance_entry_history: "রেমিট্যান্স এন্ট্রি ও ইতিহাস",
+            rate_rm_bdt: "রেট (১ রিঙ্গিত = টাকা)",
+            bdt_total: "বাংলাদেশি টাকা:",
+            save_remittance: "রেমিট্যান্স সংরক্ষণ করুন",
+            previous_remittance_history: "পূর্ববর্তী রেমিট্যান্স ইতিহাস",
+            rate: "রেট",
+            total_bdt: "মোট (টাকা)",
+            lend_borrow_entry: "ধার দেওয়া/নেওয়ার এন্ট্রি",
+            person_name: "ব্যক্তির নাম",
+            transaction_type: "লেনদেনের ধরণ",
+            i_gave_money: "আমি টাকা দিয়েছি (পাবো)",
+            i_took_money: "আমি টাকা নিয়েছি (দিবো)",
+            save_entry: "এন্ট্রি সংরক্ষণ করুন",
+            app_preferences: "অ্যাপ পছন্দসমূহ (সেটিংস)",
+            dark_mode: "ডার্ক মোড",
+            language_selection: "ভাষা নির্বাচন",
+            user_information: "ব্যবহারকারীর তথ্য",
+            click_icon_edit: "সরাসরি এডিট করতে আইকনে ক্লিক করুন",
+            name_label: "নাম",
+            designation_label: "পদবী",
+            employee_id_label: "কর্মী আইডি",
+            company_label: "কোম্পানি",
+            mobile_label: "মোবাইল",
+            email_label: "ইমেইল",
+            passport_label: "পাসপোর্ট",
+            bank_label: "ব্যাংক",
+            account_label: "হিসাব নম্বর",
+            user_role_mgmt: "ব্যবহারকারী ও রোল ব্যবস্থাপনা",
+            edit_user: "ব্যবহারকারী এডিট করুন",
+            name_req: "নাম *",
+            email_req: "ইমেইল *",
+            user_role: "ব্যবহারকারীর রোল",
+            role_user: "ইউজার (সাধারণ ব্যবহারকারী)",
+            role_admin: "অ্যাডমিন (পূর্ণ অ্যাক্সেস)",
+            role_editor: "এডিটর",
+            role_moderator: "মডারেটর",
+            save: "সংরক্ষণ",
+            name_email: "নাম ও ইমেইল",
+            role: "রোল",
+            nav_entry: "এন্ট্রি",
+            nav_summary: "সারসংক্ষেপ",
+            nav_remittance: "রেমিট্যান্স",
+            nav_profile: "প্রোফাইল",
+            nav_admin: "অ্যাডমিন"
+        }
+    };
+
+    function updateAppLanguage(lang) {
+        const dict = translations[lang] || translations['en'];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) {
+                el.innerText = dict[key];
+            }
+        });
+    }
+
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     let managingUserId = null; 
     let activeUserId = null;
     let appData = { users: [] };
@@ -951,7 +1218,7 @@
                     uData.role = "User";
                 }
                 if(!uData.settings) {
-                    uData.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' };
+                    uData.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' };
                 }
                 if(uData.profile && uData.profile.email && uData.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     uData.role = "Admin";
@@ -969,14 +1236,14 @@
                         email: firebaseUser.email,
                         designation: isTargetAdmin ? "System Administrator" : "General User",
                         empId: "EMP-" + Math.floor(10000 + Math.random() * 90000),
-                        company: "মালয়েশিয়া কনস্ট্রাকশন লিঃ",
+                        company: "Malaysia Construction Ltd.",
                         phone: "+60 12-345 6789",
                         passport: "",
                         bankName: "",
                         bankAcc: "",
                         avatar: "https://cdn-icons-png.flaticon.com/510/3135/3135715.png"
                     },
-                    settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' },
+                    settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' },
                     attendances: [],
                     remittances: [],
                     receivedSalaries: [],
@@ -1098,29 +1365,29 @@
         document.getElementById('auth-success').style.display = 'none';
 
         if (mode === 'login') {
-            title.innerText = 'লগিন করুন';
-            subtitle.innerText = 'সিস্টেমে প্রবেশ করতে ইমেইল ও পাসওয়ার্ড দিন';
+            title.innerText = 'Login';
+            subtitle.innerText = 'Enter your email and password to access the system';
             nameGroup.style.display = 'none';
             passGroup.style.display = 'block';
-            submitBtn.innerText = 'লগিন করুন';
+            submitBtn.innerText = 'Login';
             forgotLinkContainer.style.display = 'block';
-            switchText.innerHTML = `একাউন্ট নেই? <span onclick="switchAuthMode('register')">রেজিস্টার করুন</span>`;
+            switchText.innerHTML = `Don't have an account? <span onclick="switchAuthMode('register')">Register</span>`;
         } else if (mode === 'register') {
-            title.innerText = 'রেজিস্ট্রেশন করুন';
-            subtitle.innerText = 'নতুন একাউন্ট তৈরি করতে তথ্য দিন';
+            title.innerText = 'Register';
+            subtitle.innerText = 'Provide information to create a new account';
             nameGroup.style.display = 'block';
             passGroup.style.display = 'block';
-            submitBtn.innerText = 'রেজিস্টার করুন';
+            submitBtn.innerText = 'Register';
             forgotLinkContainer.style.display = 'none';
-            switchText.innerHTML = `ইতিমধ্যে একাউন্ট আছে? <span onclick="switchAuthMode('login')">লগিন করুন</span>`;
+            switchText.innerHTML = `Already have an account? <span onclick="switchAuthMode('login')">Login</span>`;
         } else if (mode === 'forgot') {
-            title.innerText = 'পাসওয়ার্ড রিকভারি';
-            subtitle.innerText = 'আপনার রেজিস্টার্ড ইমেইল দিন, পাসওয়ার্ড রিসেট লিংক পাঠানো হবে';
+            title.innerText = 'Password Recovery';
+            subtitle.innerText = 'Enter your registered email, a password reset link will be sent';
             nameGroup.style.display = 'none';
             passGroup.style.display = 'none';
-            submitBtn.innerText = 'রিসেট লিংক পাঠান';
+            submitBtn.innerText = 'Send Reset Link';
             forgotLinkContainer.style.display = 'block';
-            switchText.innerHTML = `লগিন পেজে ফিরে যান? <span onclick="switchAuthMode('login')">লগিন করুন</span>`;
+            switchText.innerHTML = `Back to login page? <span onclick="switchAuthMode('login')">Login</span>`;
         }
     }
 
@@ -1135,7 +1402,7 @@
         successDiv.style.display = 'none';
 
         if (!email) {
-            errDiv.innerText = 'দয়া করে ইমেইল দিন!';
+            errDiv.innerText = 'Please enter an email!';
             errDiv.style.display = 'block';
             return;
         }
@@ -1145,7 +1412,7 @@
                 await window.authMethods.signInWithEmailAndPassword(window.auth, email, password);
             } else if (currentAuthMode === 'register') {
                 if (!name || !password) {
-                    errDiv.innerText = 'নাম এবং পাসওয়ার্ড আবশ্যক!';
+                    errDiv.innerText = 'Name and password are required!';
                     errDiv.style.display = 'block';
                     return;
                 }
@@ -1161,14 +1428,14 @@
                         email: email,
                         designation: isNewAdmin ? "System Administrator" : "General User",
                         empId: "EMP-" + Math.floor(10000 + Math.random() * 90000),
-                        company: "মালয়েশিয়া কনস্ট্রাকশন লিঃ",
+                        company: "Malaysia Construction Ltd.",
                         phone: "",
                         passport: "",
                         bankName: "",
                         bankAcc: "",
                         avatar: "https://cdn-icons-png.flaticon.com/510/3135/3135715.png"
                     },
-                    settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'bn' },
+                    settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' },
                     attendances: [],
                     remittances: [],
                     receivedSalaries: [],
@@ -1178,13 +1445,13 @@
                 await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), newUser);
             } else if (currentAuthMode === 'forgot') {
                 await window.authMethods.sendPasswordResetEmail(window.auth, email);
-                successDiv.innerText = 'পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইনবক্স চেক করুন।';
+                successDiv.innerText = 'Password reset link has been sent to your email. Please check your inbox.';
                 successDiv.style.display = 'block';
                 return;
             }
         } catch (error) {
             console.error(error);
-            errDiv.innerText = 'ত্রুটি: ইন্টারনেট কানেকশন বা সঠিক তথ্য দিন।';
+            errDiv.innerText = 'Account has been already opened with this email';
             errDiv.style.display = 'block';
         }
     }
@@ -1230,7 +1497,7 @@
     }
 
     function manageUserEntries(userId) {
-        if(!isAdmin()) { alert("শুধুমাত্র এডমিন এই সুবিধা উপভোগ করতে পারবেন!"); return; }
+        if(!isAdmin()) { alert("Only admin can access this feature!"); return; }
         managingUserId = userId;
         loadAppUI();
         switchPage('summary', document.getElementById('nav-summary'));
@@ -1244,7 +1511,7 @@
 
     function switchPage(pageId, element) {
         if (pageId === 'admin' && !isAdmin()) {
-            alert("আপনার এডমিন প্যানেল দেখার অনুমতি নেই!");
+            alert("You do not have permission to view the admin panel!");
             return;
         }
 
@@ -1306,9 +1573,9 @@
             const dayName = dayNames[date.getDay()];
             document.getElementById('att-day').value = dayName;
             
-            if (dayName === 'রবিবার') {
+            if (dayName === 'Sunday') {
                 document.getElementById('day-type').value = 'Sunday';
-            } else if (dayName === 'শনিবার') {
+            } else if (dayName === 'Saturday') {
                 document.getElementById('day-type').value = 'Saturday';
             } else {
                 document.getElementById('day-type').value = 'Regular';
@@ -1340,9 +1607,9 @@
             let regularEnd = 17 * 60;
             if (startMinutes < regularStart) otMinutes += (regularStart - startMinutes);
             if (endMinutes > regularEnd) otMinutes += (endMinutes - regularEnd);
-        } else if (dayType === 'Saturday' || dayName === 'শনিবার') {
+        } else if (dayType === 'Saturday' || dayName === 'Saturday') {
             const satStart = 8 * 60;
-            const satEnd = 14 * 60; // শনিবার সাধারণত দুপুর ২টা পর্যন্ত ডিউটি ধরা হয়
+            const satEnd = 14 * 60;
             if (startMinutes < satStart) otMinutes += (satStart - startMinutes);
             if (endMinutes > satEnd) otMinutes += (endMinutes - satEnd);
         } else {
@@ -1381,7 +1648,7 @@
         await saveActiveUserToFirebase();
         cancelAttendanceEdit();
         renderAll();
-        alert("হাজিরা সফলভাবে সেভ/আপডেট করা হয়েছে!");
+        alert("Attendance saved/updated successfully!");
     }
 
     function editAttendance(id) {
@@ -1397,8 +1664,8 @@
         document.getElementById('out-time').value = item.outTime;
         document.getElementById('ot-hours').value = item.ot;
 
-        document.getElementById('att-form-title').innerText = "হাজিরা এডিট করুন";
-        document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('att-form-title').innerText = "Edit Attendance";
+        document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
         document.getElementById('att-cancel-btn').style.display = 'block';
         
         switchPage('entry', document.getElementById('nav-entry'));
@@ -1407,7 +1674,7 @@
     function cancelAttendanceEdit() {
         document.getElementById('att-edit-id').value = '';
         document.getElementById('att-form-title').innerText = "Daily Attendance & Entry";
-        document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-check"></i> হাজিরা সেভ করুন';
+        document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-check"></i> Save Attendance';
         document.getElementById('att-cancel-btn').style.display = 'none';
         document.getElementById('att-date').value = getTodayLocalDateString();
         onDateChange();
@@ -1415,7 +1682,7 @@
 
     async function deleteAttendance(id) {
         const user = getActiveUser();
-        if(!confirm("আপনি কি এই হাজিরা রেকর্ডটি মুছে ফেলতে চান?")) return;
+        if(!confirm("Are you sure you want to delete this attendance record?")) return;
         user.attendances = user.attendances.filter(a => a.id !== id);
         await saveActiveUserToFirebase();
         renderAll();
@@ -1429,7 +1696,7 @@
         const note = document.getElementById('recv-note').value;
 
         if(!month || amount <= 0) {
-            alert("দয়া করে মাস এবং সঠিক পরিমাণ দিন!");
+            alert("Please enter a month and correct amount!");
             return;
         }
 
@@ -1450,7 +1717,7 @@
         cancelReceivedEdit();
         renderReceivedSalaries();
         renderAttendanceSummary();
-        alert("প্রাপ্ত বেতনের হিসাব সফলভাবে সেভ/আপডেট করা হয়েছে!");
+        alert("Received salary saved/updated successfully!");
     }
 
     function editReceivedSalary(id) {
@@ -1463,15 +1730,15 @@
         document.getElementById('recv-amount').value = item.amount;
         document.getElementById('recv-note').value = item.note || '';
 
-        document.getElementById('recv-form-title').innerHTML = '<i class="fa-solid fa-wallet"></i> প্রাপ্ত বেতন এডিট করুন';
-        document.getElementById('recv-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('recv-form-title').innerHTML = '<i class="fa-solid fa-wallet"></i> Edit Received Salary';
+        document.getElementById('recv-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
         document.getElementById('recv-cancel-btn').style.display = 'block';
     }
 
     function cancelReceivedEdit() {
         document.getElementById('recv-edit-id').value = '';
-        document.getElementById('recv-form-title').innerHTML = '<i class="fa-solid fa-wallet"></i> মাসিক প্রাপ্ত বেতন হিসাব';
-        document.getElementById('recv-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> প্রাপ্ত বেতন সেভ করুন';
+        document.getElementById('recv-form-title').innerHTML = '<i class="fa-solid fa-wallet"></i> Monthly Received Salary Calculation';
+        document.getElementById('recv-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Save Received Salary';
         document.getElementById('recv-cancel-btn').style.display = 'none';
         document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
         document.getElementById('recv-amount').value = '';
@@ -1480,7 +1747,7 @@
 
     async function deleteReceivedSalary(id) {
         const user = getActiveUser();
-        if(!confirm("আপনি কি এই প্রাপ্ত বেতনের রেকর্ডটি মুছে ফেলতে চান?")) return;
+        if(!confirm("Are you sure you want to delete this received salary record?")) return;
         user.receivedSalaries = user.receivedSalaries.filter(s => s.id !== id);
         await saveActiveUserToFirebase();
         renderReceivedSalaries();
@@ -1507,8 +1774,8 @@
                     <td><b>RM ${s.amount.toFixed(2)}</b></td>
                     <td>${s.note || '-'}</td>
                     <td>
-                        <button class="table-action-btn edit" onclick="editReceivedSalary(${s.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="table-action-btn delete" onclick="deleteReceivedSalary(${s.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                        <button class="table-action-btn edit" onclick="editReceivedSalary(${s.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteReceivedSalary(${s.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
             `;
@@ -1527,7 +1794,7 @@
         const note = document.getElementById('bonus-note').value;
 
         if(!month || amount <= 0) {
-            alert("দয়া করে মাস এবং সঠিক পরিমাণ দিন!");
+            alert("Please enter a month and correct amount!");
             return;
         }
 
@@ -1548,7 +1815,7 @@
         cancelBonusEdit();
         renderBonuses();
         renderAttendanceSummary();
-        alert("বোনাসের হিসাব সফলভাবে সেভ/আপডেট করা হয়েছে!");
+        alert("Bonus saved/updated successfully!");
     }
 
     function editBonus(id) {
@@ -1561,15 +1828,15 @@
         document.getElementById('bonus-amount').value = item.amount;
         document.getElementById('bonus-note').value = item.note || '';
 
-        document.getElementById('bonus-form-title').innerHTML = '<i class="fa-solid fa-award"></i> বোনাস এডিট করুন';
-        document.getElementById('bonus-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('bonus-form-title').innerHTML = '<i class="fa-solid fa-award"></i> Edit Bonus';
+        document.getElementById('bonus-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
         document.getElementById('bonus-cancel-btn').style.display = 'block';
     }
 
     function cancelBonusEdit() {
         document.getElementById('bonus-edit-id').value = '';
-        document.getElementById('bonus-form-title').innerHTML = '<i class="fa-solid fa-award"></i> মাসিক বোনাস হিসাব';
-        document.getElementById('bonus-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> বোনাস সেভ করুন';
+        document.getElementById('bonus-form-title').innerHTML = '<i class="fa-solid fa-award"></i> Monthly Bonus Calculation';
+        document.getElementById('bonus-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Save Bonus';
         document.getElementById('bonus-cancel-btn').style.display = 'none';
         document.getElementById('bonus-month').value = new Date().toISOString().slice(0, 7);
         document.getElementById('bonus-amount').value = '';
@@ -1578,7 +1845,7 @@
 
     async function deleteBonus(id) {
         const user = getActiveUser();
-        if(!confirm("আপনি কি এই বোনাসের রেকর্ডটি মুছে ফেলতে চান?")) return;
+        if(!confirm("Are you sure you want to delete this bonus record?")) return;
         user.bonuses = user.bonuses.filter(b => b.id !== id);
         await saveActiveUserToFirebase();
         renderBonuses();
@@ -1602,15 +1869,14 @@
                     <td><b>RM ${b.amount.toFixed(2)}</b></td>
                     <td>${b.note || '-'}</td>
                     <td>
-                        <button class="table-action-btn edit" onclick="editBonus(${b.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="table-action-btn delete" onclick="deleteBonus(${b.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                        <button class="table-action-btn edit" onclick="editBonus(${b.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteBonus(${b.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
             `;
         });
     }
 
-    // ধার-দেনা (Lend & Borrow) ফাংশনসমূহ
     async function saveLendBorrow() {
         const user = getActiveUser();
         const editId = document.getElementById('lb-edit-id').value;
@@ -1621,7 +1887,7 @@
         const note = document.getElementById('lb-note').value.trim();
 
         if(!date || !name || amount <= 0) {
-            alert("তারিখ, নাম এবং সঠিক পরিমাণ দিন!");
+            alert("Please enter date, name, and correct amount!");
             return;
         }
 
@@ -1637,7 +1903,7 @@
         cancelLendBorrowEdit();
         closeLendBorrowModal();
         renderLendBorrows();
-        alert("হিসাব সফলভাবে সেভ করা হয়েছে!");
+        alert("Account saved successfully!");
     }
 
     function editLendBorrow(id) {
@@ -1652,16 +1918,16 @@
         document.getElementById('lb-amount').value = item.amount;
         document.getElementById('lb-note').value = item.note || '';
 
-        document.getElementById('lb-form-title').innerHTML = '<i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা এডিট করুন';
-        document.getElementById('lb-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('lb-form-title').innerHTML = '<i class="fa-solid fa-handshake-angle"></i> Edit Lend & Borrow';
+        document.getElementById('lb-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
         document.getElementById('lb-cancel-btn').style.display = 'block';
         openLendBorrowModal();
     }
 
     function cancelLendBorrowEdit() {
         document.getElementById('lb-edit-id').value = '';
-        document.getElementById('lb-form-title').innerHTML = '<i class="fa-solid fa-handshake-angle"></i> ধার ও দেনা এন্ট্রি';
-        document.getElementById('lb-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> হিসাব সেভ করুন';
+        document.getElementById('lb-form-title').innerHTML = '<i class="fa-solid fa-handshake-angle"></i> Lend & Borrow Entry';
+        document.getElementById('lb-save-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Save Entry';
         document.getElementById('lb-cancel-btn').style.display = 'none';
         document.getElementById('lb-date').value = getTodayLocalDateString();
         document.getElementById('lb-name').value = '';
@@ -1671,7 +1937,7 @@
 
     async function deleteLendBorrow(id) {
         const user = getActiveUser();
-        if(!confirm("আপনি কি এই হিসাবটি মুছে ফেলতে চান?")) return;
+        if(!confirm("Are you sure you want to delete this account?")) return;
         user.lendBorrows = user.lendBorrows.filter(i => i.id !== id);
         await saveActiveUserToFirebase();
         renderLendBorrows();
@@ -1699,7 +1965,7 @@
             }
 
             const badgeColor = item.type === 'given' ? 'color: #059669; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
-            const typeText = item.type === 'given' ? 'পাওয়া (পাওনা)' : 'দেওয়া (দেনা)';
+            const typeText = item.type === 'given' ? 'Given (Receivable)' : 'Taken (Payable)';
 
             if (tbody) {
                 tbody.innerHTML += `
@@ -1710,15 +1976,14 @@
                         <td><b>RM ${item.amount.toFixed(2)}</b></td>
                         <td>${item.note || '-'}</td>
                         <td>
-                            <button class="table-action-btn edit" onclick="editLendBorrow(${item.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="table-action-btn delete" onclick="deleteLendBorrow(${item.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="table-action-btn edit" onclick="editLendBorrow(${item.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="table-action-btn delete" onclick="deleteLendBorrow(${item.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                         </td>
                     </tr>
                 `;
             }
         });
 
-        // রেমিটেন্স পেজ এবং এন্ট্রি পেজ উভয়ের ধার-দেনার ব্যালেন্স আপডেট করা হলো
         const totalGivenStr = totalGiven.toFixed(2);
         const totalTakenStr = totalTaken.toFixed(2);
 
@@ -1745,7 +2010,7 @@
         
         let { start, end } = getCycleDateRange(selectedMonth);
         if (start && end) {
-            document.getElementById('cycle-range-text').innerText = `হিসাবের চক্র: ${formatDateToDDMMYY(start)} হতে ${formatDateToDDMMYY(end)}`;
+            document.getElementById('cycle-range-text').innerText = `Calculation Cycle: ${formatDateToDDMMYY(start)} to ${formatDateToDDMMYY(end)}`;
         }
 
         const listTbody = document.getElementById('attendance-list');
@@ -1772,8 +2037,8 @@
                         <td>${item.ot}h</td>
                         <td>${item.type}</td>
                         <td>
-                            <button class="table-action-btn edit" onclick="editAttendance(${item.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="table-action-btn delete" onclick="deleteAttendance(${item.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="table-action-btn edit" onclick="editAttendance(${item.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="table-action-btn delete" onclick="deleteAttendance(${item.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                         </td>
                     </tr>
                 `;
@@ -1797,7 +2062,6 @@
             }
         });
 
-        // বোনাস যোগ করা হলো
         let monthlyBonus = 0;
         if (selectedMonth && user.bonuses) {
             const foundBonus = user.bonuses.find(b => b.month === selectedMonth);
@@ -1844,7 +2108,7 @@
     function calculateBDT() {
         const amount = parseFloat(document.getElementById('rem-amount').value) || 0;
         const rate = parseFloat(document.getElementById('rem-rate').value) || 0;
-        document.getElementById('rem-bdt-total').innerText = (amount * rate).toLocaleString('bn-BD', { minimumFractionDigits: 2 });
+        document.getElementById('rem-bdt-total').innerText = (amount * rate).toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
     async function saveRemittance() {
@@ -1869,8 +2133,7 @@
         await saveActiveUserToFirebase();
         cancelRemittanceEdit();
         renderRemittances();
-        renderAttendanceSummary();
-        alert("রেমিটেন্স সফলভাবে সেভ/আপডেট করা হয়েছে!");
+        alert("Remittance saved successfully!");
     }
 
     function editRemittance(id) {
@@ -1885,297 +2148,322 @@
         document.getElementById('rem-note').value = item.note || '';
         calculateBDT();
 
-        document.getElementById('rem-form-title').innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> রেমিটেন্স এডিট করুন';
-        document.getElementById('rem-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> আপডেট করুন';
+        document.getElementById('rem-form-title').innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> Edit Remittance';
+        document.getElementById('rem-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
         document.getElementById('rem-cancel-btn').style.display = 'block';
     }
 
     function cancelRemittanceEdit() {
         document.getElementById('rem-edit-id').value = '';
-        document.getElementById('rem-form-title').innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> রেমিটেন্স এন্ট্রি ও হিস্ট্রি';
-        document.getElementById('rem-save-btn').innerHTML = "রেমিটেন্স সেভ করুন";
+        document.getElementById('rem-form-title').innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> Remittance Entry & History';
+        document.getElementById('rem-save-btn').innerHTML = 'Save Remittance';
         document.getElementById('rem-cancel-btn').style.display = 'none';
+        document.getElementById('rem-date').value = getTodayLocalDateString();
         document.getElementById('rem-amount').value = '';
         document.getElementById('rem-rate').value = '';
         document.getElementById('rem-note').value = '';
         document.getElementById('rem-bdt-total').innerText = '0.00';
-        document.getElementById('rem-date').value = getTodayLocalDateString();
     }
 
     async function deleteRemittance(id) {
         const user = getActiveUser();
-        if(!confirm("আপনি কি এই রেমিটেন্স রেকর্ডটি মুছে ফেলতে চান?")) return;
+        if(!confirm("Are you sure you want to delete this remittance record?")) return;
         user.remittances = user.remittances.filter(r => r.id !== id);
         await saveActiveUserToFirebase();
         renderRemittances();
-        renderAttendanceSummary();
     }
 
     function renderRemittances() {
         const user = getActiveUser();
         if(!user) return;
         if(!user.remittances) user.remittances = [];
-        
+
         const tbody = document.getElementById('remittance-list');
-        tbody.innerHTML = '';
+        if (tbody) tbody.innerHTML = '';
+        
         user.remittances.sort((a,b) => new Date(b.date) - new Date(a.date));
 
         let totalRemittance = 0;
 
         user.remittances.forEach(r => {
             let displayAmount = r.amount;
-            let displayRate = r.rate;
-            
             if (r.amount < 100 && r.rate > 100) {
                 displayAmount = r.rate;
-                displayRate = r.amount;
             }
-
             totalRemittance += displayAmount;
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>${r.date}</td>
-                    <td>RM ${displayAmount.toFixed(2)}</td>
-                    <td>${displayRate || '-'}</td>
-                    <td>৳ ${(r.totalBDT || 0).toLocaleString('bn-BD', { minimumFractionDigits: 2 })}</td>
-                    <td>
-                        <button class="table-action-btn edit" onclick="editRemittance(${r.id})" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="table-action-btn delete" onclick="deleteRemittance(${r.id})" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
-                </tr>
-            `;
+            if (tbody) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${r.date}</td>
+                        <td><b>RM ${displayAmount.toFixed(2)}</b></td>
+                        <td>${r.rate}</td>
+                        <td>৳ ${r.totalBDT.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                        <td>
+                            <button class="table-action-btn edit" onclick="editRemittance(${r.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="table-action-btn delete" onclick="deleteRemittance(${r.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }
         });
 
-        document.getElementById('top-total-remittance').innerText = totalRemittance.toFixed(2);
-        document.getElementById('page-total-remittance').innerText = totalRemittance.toFixed(2);
+        const formattedTotal = totalRemittance.toFixed(2);
+        if (document.getElementById('page-total-remittance')) document.getElementById('page-total-remittance').innerText = formattedTotal;
+        if (document.getElementById('top-total-remittance')) document.getElementById('top-total-remittance').innerText = formattedTotal;
     }
 
     function renderProfile() {
         const user = getActiveUser();
         if(!user) return;
-        const p = user.profile;
-        const role = (p.email && p.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? 'Admin' : (user.role || 'User');
-        
-        document.getElementById('view-name').innerText = p.name || 'N/A';
-        document.getElementById('view-designation').innerText = p.designation || 'সাধারণ ইউজার';
-        document.getElementById('view-emp-id').innerText = 'ID: ' + (p.empId || 'N/A');
-        
-        document.getElementById('field-name').innerHTML = `${p.name || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('name')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-designation').innerHTML = `${p.designation || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('designation')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-empId').innerHTML = `${p.empId || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('empId')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-company').innerHTML = `${p.company || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('company')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-phone').innerHTML = `${p.phone || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('phone')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-email').innerHTML = `${p.email || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('email')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-passport').innerHTML = `${p.passport || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('passport')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-bankName').innerHTML = `${p.bankName || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankName')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-bankAcc').innerHTML = `${p.bankAcc || 'N/A'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankAcc')"><i class="fa-solid fa-pen"></i></button>`;
+        const p = user.profile || {};
 
-        document.getElementById('view-avatar').src = p.avatar || "https://cdn-icons-png.flaticon.com/510/3135/3135715.png";
+        document.getElementById('view-name').innerText = p.name || '-';
+        document.getElementById('view-designation').innerText = p.designation || '-';
+        document.getElementById('view-emp-id').innerText = p.empId || '-';
+        document.getElementById('view-avatar').src = p.avatar || 'https://cdn-icons-png.flaticon.com/510/3135/3135715.png';
 
-        const roleSpan = document.getElementById('view-role');
-        roleSpan.innerText = role.toUpperCase();
-        roleSpan.className = 'role-badge ' + (role.toLowerCase() === 'admin' ? 'role-admin' : role.toLowerCase() === 'editor' ? 'role-editor' : role.toLowerCase() === 'moderator' ? 'role-moderator' : 'role-user');
+        const roleBadge = document.getElementById('view-role');
+        roleBadge.innerText = user.role || 'USER';
+        roleBadge.className = "role-badge role-" + (user.role ? user.role.toLowerCase() : 'user');
+
+        document.getElementById('field-name').innerHTML = `${p.name || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('name')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-designation').innerHTML = `${p.designation || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('designation')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-empId').innerHTML = `${p.empId || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('empId')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-company').innerHTML = `${p.company || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('company')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-phone').innerHTML = `${p.phone || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('phone')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-email').innerHTML = `${p.email || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('email')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-passport').innerHTML = `${p.passport || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('passport')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-bankName').innerHTML = `${p.bankName || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankName')"><i class="fa-solid fa-pen"></i></button>`;
+        document.getElementById('field-bankAcc').innerHTML = `${p.bankAcc || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankAcc')"><i class="fa-solid fa-pen"></i></button>`;
     }
 
-    async function toggleDarkMode() {
+    function enableInlineEdit(fieldKey) {
+        const span = document.getElementById('field-' + fieldKey);
         const user = getActiveUser();
-        if(!user) return;
-        const isDark = document.getElementById('dark-mode-toggle').checked;
-        if(!user.settings) user.settings = {};
-        user.settings.darkMode = isDark;
-        applyTheme(isDark);
-        await saveActiveUserToFirebase();
+        const currentVal = user.profile[fieldKey] || '';
+        
+        span.innerHTML = `
+            <input type="text" id="inline-input-${fieldKey}" value="${currentVal}">
+            <button class="inline-edit-btn" onclick="saveInlineEdit('${fieldKey}')" style="color: #10b981;"><i class="fa-solid fa-check"></i></button>
+            <button class="inline-edit-btn" onclick="renderProfile()" style="color: #ef4444;"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        document.getElementById('inline-input-' + fieldKey).focus();
     }
 
-    function applyTheme(isDark) {
-        const slider = document.getElementById('dark-slider');
-        const circle = document.getElementById('dark-circle');
-        if(isDark) {
-            document.body.classList.add('dark-mode');
-            if(slider) slider.style.backgroundColor = '#3b82f6';
-            if(circle) circle.style.transform = 'translateX(22px)';
-            const toggle = document.getElementById('dark-mode-toggle');
-            if(toggle) toggle.checked = true;
-        } else {
-            document.body.classList.remove('dark-mode');
-            if(slider) slider.style.backgroundColor = '#cbd5e1';
-            if(circle) circle.style.transform = 'translateX(0)';
-            const toggle = document.getElementById('dark-mode-toggle');
-            if(toggle) toggle.checked = false;
-        }
-    }
-
-    async function changeLanguage() {
+    async function saveInlineEdit(fieldKey) {
+        const input = document.getElementById('inline-input-' + fieldKey);
+        if(!input) return;
+        const newVal = input.value.trim();
         const user = getActiveUser();
-        if(!user) return;
-        const langVal = document.getElementById('lang-selector').value;
-        if(!user.settings) user.settings = {};
-        user.settings.lang = langVal;
+        
+        if(!user.profile) user.profile = {};
+        user.profile[fieldKey] = newVal;
+
         await saveActiveUserToFirebase();
-        alert(langVal === 'en' ? "Language preference saved as English." : "ভাষার পছন্দ সফলভাবে সংরক্ষিত হয়েছে।");
+        loadAppUI();
+    }
+
+    function uploadAvatar(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const base64Img = e.target.result;
+            const user = getActiveUser();
+            if(!user.profile) user.profile = {};
+            user.profile.avatar = base64Img;
+            await saveActiveUserToFirebase();
+            loadAppUI();
+        };
+        reader.readAsDataURL(file);
     }
 
     function loadActiveUserSettings() {
         const user = getActiveUser();
-        if(!user) return;
-        const s = user.settings;
-        document.getElementById('cfg-basic').value = s.basic || 1700;
-        document.getElementById('cfg-days').value = s.days || 26;
-        document.getElementById('cfg-hours').value = s.hours || 8;
-        document.getElementById('cfg-ot-mult').value = s.otMult || 1.5;
+        if(!user || !user.settings) return;
         
-        applyTheme(s.darkMode || false);
+        const s = user.settings;
+        document.getElementById('cfg-basic').value = s.basic;
+        document.getElementById('cfg-days').value = s.days;
+        document.getElementById('cfg-hours').value = s.hours;
+        document.getElementById('cfg-ot-mult').value = s.otMult;
+
+        const darkToggle = document.getElementById('dark-mode-toggle');
+        darkToggle.checked = !!s.darkMode;
+        if(s.darkMode) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('dark-circle').style.transform = 'translateX(22px)';
+            document.getElementById('dark-slider').style.backgroundColor = '#3b82f6';
+        } else {
+            document.body.classList.remove('dark-mode');
+            document.getElementById('dark-circle').style.transform = 'translateX(0)';
+            document.getElementById('dark-slider').style.backgroundColor = '#cbd5e1';
+        }
+
         if(s.lang) {
             document.getElementById('lang-selector').value = s.lang;
+            updateAppLanguage(s.lang);
         }
 
         calculateRatePreview(false);
     }
 
-    function enableInlineEdit(fieldKey) {
-        const user = getActiveUser();
-        const currentValue = user.profile[fieldKey] || '';
-        const container = document.getElementById('field-' + fieldKey);
-        
-        container.innerHTML = `
-            <input type="text" id="input-${fieldKey}" value="${currentValue}">
-            <button class="inline-edit-btn" style="color:#10b981;" onclick="saveInlineEdit('${fieldKey}')" title="সেভ করুন"><i class="fa-solid fa-check"></i></button>
-            <button class="inline-edit-btn" style="color:#ef4444;" onclick="renderProfile()" title="বাতিল"><i class="fa-solid fa-xmark"></i></button>
-        `;
-        document.getElementById('input-' + fieldKey).focus();
-    }
+    async function calculateRatePreview(save) {
+        const basic = parseFloat(document.getElementById('cfg-basic').value) || 0;
+        const days = parseFloat(document.getElementById('cfg-days').value) || 1;
+        const hours = parseFloat(document.getElementById('cfg-hours').value) || 1;
+        const otMult = parseFloat(document.getElementById('cfg-ot-mult').value) || 1;
 
-    async function saveInlineEdit(fieldKey) {
-        const inputVal = document.getElementById('input-' + fieldKey).value.trim();
-        const user = getActiveUser();
-        user.profile[fieldKey] = inputVal;
-        await saveActiveUserToFirebase();
-        renderProfile();
-    }
+        let daily = basic / days;
+        let hourly = daily / hours;
+        let sundayRate = daily * 2;
+        let holidayRate = daily * 3;
 
-    function uploadAvatar(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                getActiveUser().profile.avatar = e.target.result;
-                await saveActiveUserToFirebase();
-                renderProfile();
-            };
-            reader.readAsDataURL(file);
+        document.getElementById('rate-regular').innerText = daily.toFixed(2);
+        document.getElementById('rate-sunday').innerText = sundayRate.toFixed(2);
+        document.getElementById('rate-holiday').innerText = holidayRate.toFixed(2);
+
+        if(save) {
+            const user = getActiveUser();
+            user.settings = { basic, days, hours, otMult, darkMode: user.settings ? user.settings.darkMode : false, lang: user.settings ? user.settings.lang : 'en' };
+            await saveActiveUserToFirebase();
+            renderAttendanceSummary();
         }
     }
 
+    async function toggleDarkMode() {
+        const darkToggle = document.getElementById('dark-mode-toggle');
+        const isDark = darkToggle.checked;
+        const user = getActiveUser();
+
+        if(!user.settings) user.settings = {};
+        user.settings.darkMode = isDark;
+
+        if(isDark) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('dark-circle').style.transform = 'translateX(22px)';
+            document.getElementById('dark-slider').style.backgroundColor = '#3b82f6';
+        } else {
+            document.body.classList.remove('dark-mode');
+            document.getElementById('dark-circle').style.transform = 'translateX(0)';
+            document.getElementById('dark-slider').style.backgroundColor = '#cbd5e1';
+        }
+
+        await saveActiveUserToFirebase();
+    }
+
+    async function changeLanguage() {
+        const lang = document.getElementById('lang-selector').value;
+        const user = getActiveUser();
+        if(!user.settings) user.settings = {};
+        user.settings.lang = lang;
+        await saveActiveUserToFirebase();
+        updateAppLanguage(lang);
+    }
+
     function renderAdminUserList() {
-        if (!isAdmin()) return;
+        if(!isAdmin()) return;
         const tbody = document.getElementById('admin-user-list');
         tbody.innerHTML = '';
+
         appData.users.forEach(u => {
-            const isUAdmin = (u.profile && u.profile.email && u.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || u.role === 'Admin';
-            const roleStr = isUAdmin ? 'Admin' : (u.role || 'User');
-            const roleClass = roleStr.toLowerCase() === 'admin' ? 'role-admin' : roleStr.toLowerCase() === 'editor' ? 'role-editor' : roleStr.toLowerCase() === 'moderator' ? 'role-moderator' : 'role-user';
-            
+            const name = (u.profile && u.profile.name) ? u.profile.name : 'Unknown';
+            const email = (u.profile && u.profile.email) ? u.profile.email : '-';
+            const role = u.role || 'User';
+
             tbody.innerHTML += `
                 <tr>
                     <td style="text-align: left; padding-left: 6px;">
-                        <b>${u.profile.name}</b><br>
-                        <small style="color:#64748b">${u.profile.email}</small>
+                        <b>${name}</b><br><span style="font-size: 10px; color: #64748b;">${email}</span>
                     </td>
-                    <td><span class="role-badge ${roleClass}">${roleStr}</span></td>
+                    <td><span class="role-badge role-${role.toLowerCase()}">${role}</span></td>
                     <td>
-                        <button class="btn btn-success btn-sm" onclick="manageUserEntries('${u.id}')" title="এই ইউজারের হাজিরা ও রেমিটেন্স এন্ট্রি ম্যানেজ করুন"><i class="fa-solid fa-folder-open"></i> ম্যানেজ</button>
-                        <button class="table-action-btn edit" onclick="editUserFromAdmin('${u.id}')" title="এডিট"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${appData.users.length > 1 && u.id !== getLoggedInUser().id ? `<button class="table-action-btn delete" onclick="deleteUserFromAdmin('${u.id}')" title="ডিলিট"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        <button class="table-action-btn edit" onclick="manageUserEntries('${u.id}')" title="Manage Entries"><i class="fa-solid fa-folder-open"></i></button>
+                        <button class="table-action-btn edit" onclick="openUserEditForm('${u.id}')" title="Edit Role"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteUser('${u.id}')" title="Delete User"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
             `;
         });
+    }
+
+    function openUserEditForm(userId) {
+        const u = appData.users.find(item => item.id === userId);
+        if(!u) return;
+
+        document.getElementById('admin-user-id').value = u.id;
+        document.getElementById('admin-user-name').value = (u.profile && u.profile.name) ? u.profile.name : '';
+        document.getElementById('admin-user-email').value = (u.profile && u.profile.email) ? u.profile.email : '';
+        document.getElementById('admin-user-role').value = u.role || 'User';
+
+        document.getElementById('user-edit-section').classList.remove('hidden');
     }
 
     function hideUserForm() {
         document.getElementById('user-edit-section').classList.add('hidden');
     }
 
-    function editUserFromAdmin(id) {
-        if(!isAdmin()) { alert("শুধুমাত্র এডমিন রোল পরিবর্তন করতে পারবে!"); return; }
-        const u = appData.users.find(x => x.id === id);
-        if (!u) return;
-        document.getElementById('admin-user-id').value = u.id;
-        document.getElementById('admin-user-name').value = u.profile.name;
-        document.getElementById('admin-user-email').value = u.profile.email || '';
-        document.getElementById('admin-user-role').value = u.role || 'User';
-        
-        document.getElementById('role-select-group').classList.remove('hidden'); 
-        document.getElementById('user-form-title').innerText = 'ইউজার ও রোল পরিবর্তন করুন';
-        document.getElementById('user-edit-section').classList.remove('hidden');
-    }
-
     async function saveUserFromAdmin() {
-        if(!isAdmin()) { alert("শুধুমাত্র এডমিন সেভ করতে পারবে!"); return; }
-        const id = document.getElementById('admin-user-id').value;
+        const userId = document.getElementById('admin-user-id').value;
         const name = document.getElementById('admin-user-name').value.trim();
         const email = document.getElementById('admin-user-email').value.trim();
         const role = document.getElementById('admin-user-role').value;
 
         if(!name || !email) {
-            alert("নাম এবং ইমেইল আবশ্যক!");
+            alert("Name and Email are required!");
             return;
         }
 
-        if(id) {
-            const u = appData.users.find(x => x.id == id);
-            if(u) {
-                u.profile.name = name;
-                u.profile.email = email;
-                u.role = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? "Admin" : role; 
-                await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(u.id)), u);
-            }
-        }
-        renderAdminUserList();
+        const u = appData.users.find(item => item.id === userId);
+        if(!u) return;
+
+        u.role = role;
+        if(!u.profile) u.profile = {};
+        u.profile.name = name;
+        u.profile.email = email;
+
+        await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(u.id)), u);
         hideUserForm();
-        alert("ইউজার সফলভাবে আপডেট করা হয়েছে!");
-    }
-
-    async function deleteUserFromAdmin(id) {
-        if(!isAdmin()) { alert("শুধুমাত্র এডমিন ডিলিট করতে পারবে!"); return; }
-        if(!confirm("আপনি কি নিশ্চিত এই ইউজার ডিলিট করতে চান?")) return;
-        
-        await window.fsMethods.deleteDoc(window.fsMethods.doc(window.db, "users", String(id)));
-        appData.users = appData.users.filter(u => u.id !== id);
         renderAdminUserList();
+        alert("User updated successfully!");
     }
 
-    function calculateRatePreview(shouldSave = false) {
-        const basic = parseFloat(document.getElementById('cfg-basic').value) || 0;
-        const days = parseFloat(document.getElementById('cfg-days').value) || 1;
-
-        const regularRate = basic / days;
-        const sundayRate = regularRate * 2;
-        const holidayRate = regularRate * 3;
-
-        document.getElementById('rate-regular').innerText = regularRate.toFixed(2);
-        document.getElementById('rate-sunday').innerText = sundayRate.toFixed(2);
-        document.getElementById('rate-holiday').innerText = holidayRate.toFixed(2);
-
-        if (shouldSave) {
-            saveSettings();
+    // অ্যাডমিন যেকোনো ইউজার ডিলিট করার ফাংশন
+    async function deleteUser(userId) {
+        if(!isAdmin()) {
+            alert("Only admin can delete users!");
+            return;
         }
-    }
 
-    async function saveSettings() {
-        const user = getActiveUser();
-        if(!user) return;
-        if(!user.settings) user.settings = {};
-        user.settings.basic = parseFloat(document.getElementById('cfg-basic').value) || 0;
-        user.settings.days = parseFloat(document.getElementById('cfg-days').value) || 1;
-        user.settings.hours = parseFloat(document.getElementById('cfg-hours').value) || 1;
-        user.settings.otMult = parseFloat(document.getElementById('cfg-ot-mult').value) || 1;
+        const targetUser = appData.users.find(u => u.id === userId);
+        if(targetUser && targetUser.profile && targetUser.profile.email && targetUser.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+            alert("The primary admin account cannot be deleted!");
+            return;
+        }
 
-        await saveActiveUserToFirebase();
-        renderAttendanceSummary();
+        if(!confirm("Are you sure you want to completely delete this user and all their records?")) return;
+
+        try {
+            // ফায়ারস্টোর ডাটাবেজ থেকে ইউজারের ডকুমেন্ট ডিলিট করা
+            await window.fsMethods.deleteDoc(window.fsMethods.doc(window.db, "users", String(userId)));
+
+            // লোকাল অ্যাপ ডাটা থেকে ইউজার রিমুভ করা
+            appData.users = appData.users.filter(u => u.id !== userId);
+
+            // যদি ডিলিট করা ইউজার ম্যানেজ করা হচ্ছিল, তবে ম্যানেজিং মোড বন্ধ করা
+            if(managingUserId === userId) {
+                managingUserId = null;
+                loadAppUI();
+            }
+
+            renderAdminUserList();
+            alert("User deleted successfully from the system!");
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            alert("Failed to delete user. Please check console.");
+        }
     }
 </script>
-
 </body>
 </html>
