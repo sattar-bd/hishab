@@ -767,6 +767,38 @@
             </ul>
         </div>
 
+        <!-- Help & Support Feature Card Added to Profile Page -->
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-circle-question"></i> <span data-i18n="help_support">Help & Support</span></span>
+            </div>
+            <div class="form-group">
+                <label data-i18n="help_subject">Subject / Issue</label>
+                <input type="text" id="help-subject" class="form-control" placeholder="e.g., Salary calculation issue">
+            </div>
+            <div class="form-group">
+                <label data-i18n="help_details">Details Description</label>
+                <textarea id="help-message" class="form-control" rows="2" placeholder="Describe your problem clearly..."></textarea>
+            </div>
+            <button class="btn btn-sm btn-success" onclick="submitHelpRequest()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="send_help_request">Send Help Request</span></button>
+            
+            <div style="margin-top: 12px;">
+                <b style="font-size: 11px; color: #475569;" data-i18n="my_help_requests">My Help Requests & Status:</b>
+                <div style="overflow-x: auto; max-height: 150px; margin-top: 4px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="date">Date</th>
+                                <th data-i18n="subject">Subject</th>
+                                <th data-i18n="status">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-help-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-title">
                 <span><i class="fa-solid fa-id-card"></i> <span data-i18n="user_information">User Information</span></span>
@@ -852,6 +884,26 @@
                             </tr>
                         </thead>
                         <tbody id="admin-user-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Help Management Section Added -->
+            <div class="card" style="margin-top: 12px;">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-headset"></i> <span data-i18n="admin_help_mgmt">Help Requests Management</span></span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="user">User</th>
+                                <th data-i18n="subject">Subject</th>
+                                <th data-i18n="status">Status</th>
+                                <th data-i18n="action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-help-list"></tbody>
                     </table>
                 </div>
             </div>
@@ -1048,7 +1100,16 @@
             nav_summary: "Summary",
             nav_remittance: "Remittance",
             nav_profile: "Profile",
-            nav_admin: "Admin"
+            nav_admin: "Admin",
+            help_support: "Help & Support",
+            help_subject: "Subject / Issue",
+            help_details: "Details Description",
+            send_help_request: "Send Help Request",
+            my_help_requests: "My Help Requests & Status:",
+            subject: "Subject",
+            status: "Status",
+            admin_help_mgmt: "Help Requests Management",
+            user: "User"
         },
         bn: {
             loading: "তথ্য লোড হচ্ছে...",
@@ -1181,7 +1242,16 @@
             nav_summary: "সারসংক্ষেপ",
             nav_remittance: "রেমিট্যান্স",
             nav_profile: "প্রোফাইল",
-            nav_admin: "অ্যাডমিন"
+            nav_admin: "অ্যাডমিন",
+            help_support: "হেল্প ও সাপোর্ট",
+            help_subject: "বিষয় / সমস্যা",
+            help_details: "বিস্তারিত বিবরণ",
+            send_help_request: "হেল্প রিকুয়েস্ট পাঠান",
+            my_help_requests: "আমার হেল্প রিকুয়েস্ট ও স্ট্যাটাস:",
+            subject: "বিষয়",
+            status: "স্ট্যাটাস",
+            admin_help_mgmt: "হেল্প রিকুয়েস্ট ম্যানেজমেন্ট",
+            user: "ইউজার"
         }
     };
 
@@ -1220,6 +1290,9 @@
                 if(!uData.settings) {
                     uData.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' };
                 }
+                if(!uData.helps) {
+                    uData.helps = [];
+                }
                 if(uData.profile && uData.profile.email && uData.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     uData.role = "Admin";
                 }
@@ -1248,7 +1321,8 @@
                     remittances: [],
                     receivedSalaries: [],
                     bonuses: [],
-                    lendBorrows: []
+                    lendBorrows: [],
+                    helps: []
                 };
                 if(isTargetAdmin) {
                     currentUserDoc.role = "Admin";
@@ -1440,7 +1514,8 @@
                     remittances: [],
                     receivedSalaries: [],
                     bonuses: [],
-                    lendBorrows: []
+                    lendBorrows: [],
+                    helps: []
                 };
                 await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), newUser);
             } else if (currentAuthMode === 'forgot') {
@@ -1522,6 +1597,10 @@
         
         if(pageId === 'admin') {
             renderAdminUserList();
+            renderAdminHelpList();
+        }
+        if(pageId === 'profile') {
+            renderHelpRequestsList();
         }
         renderAll();
     }
@@ -1993,12 +2072,126 @@
         if (document.getElementById('entry-total-borrow-taken')) document.getElementById('entry-total-borrow-taken').innerText = totalTakenStr;
     }
 
+    // Help & Support Feature Functions
+    async function submitHelpRequest() {
+        const user = getActiveUser();
+        const subject = document.getElementById('help-subject').value.trim();
+        const message = document.getElementById('help-message').value.trim();
+
+        if(!subject || !message) {
+            alert("Please enter both subject and message!");
+            return;
+        }
+
+        if(!user.helps) user.helps = [];
+
+        const newHelp = {
+            id: Date.now(),
+            date: getTodayLocalDateString(),
+            subject: subject,
+            message: message,
+            status: "Pending"
+        };
+
+        user.helps.push(newHelp);
+        await saveActiveUserToFirebase();
+
+        document.getElementById('help-subject').value = '';
+        document.getElementById('help-message').value = '';
+        renderHelpRequestsList();
+        alert("Help request sent successfully!");
+    }
+
+    function renderHelpRequestsList() {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.helps) user.helps = [];
+
+        const tbody = document.getElementById('user-help-list');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+
+        user.helps.sort((a,b) => b.id - a.id);
+
+        user.helps.forEach(h => {
+            const statusBadge = h.status === 'Resolved' ? '<span style="color:#10b981; font-weight:bold;">Resolved</span>' : '<span style="color:#f59e0b; font-weight:bold;">Pending</span>';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${formatDateToDDMMYY(h.date)}</td>
+                    <td><b>${h.subject}</b><br><small style="color:#64748b;">${h.message}</small></td>
+                    <td>${statusBadge}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderAdminHelpList() {
+        if(!isAdmin()) return;
+        const tbody = document.getElementById('admin-help-list');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+
+        let allHelps = [];
+        appData.users.forEach(u => {
+            if(u.helps && u.helps.length > 0) {
+                u.helps.forEach(h => {
+                    allHelps.push({ ...h, userId: u.id, userName: u.profile.name });
+                });
+            }
+        });
+
+        allHelps.sort((a,b) => b.id - a.id);
+
+        if(allHelps.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">No help requests found</td></tr>`;
+            return;
+        }
+
+        allHelps.forEach(h => {
+            const statusColor = h.status === 'Resolved' ? 'color:#10b981;' : 'color:#f59e0b;';
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${h.userName}</b></td>
+                    <td><b>${h.subject}</b><br><small style="color:#64748b;">${h.message}</small></td>
+                    <td style="${statusColor} font-weight:bold;">${h.status}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="toggleHelpStatus('${h.userId}', ${h.id})" title="Toggle Status"><i class="fa-solid fa-rotate"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteHelpRequest('${h.userId}', ${h.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    async function toggleHelpStatus(userId, helpId) {
+        const targetUser = appData.users.find(u => u.id === userId);
+        if(!targetUser || !targetUser.helps) return;
+
+        const helpItem = targetUser.helps.find(h => h.id === helpId);
+        if(helpItem) {
+            helpItem.status = helpItem.status === 'Resolved' ? 'Pending' : 'Resolved';
+            await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(userId)), targetUser);
+            renderAdminHelpList();
+        }
+    }
+
+    async function deleteHelpRequest(userId, helpId) {
+        if(!confirm("Are you sure you want to delete this help request?")) return;
+        const targetUser = appData.users.find(u => u.id === userId);
+        if(!targetUser || !targetUser.helps) return;
+
+        targetUser.helps = targetUser.helps.filter(h => h.id !== helpId);
+        await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(userId)), targetUser);
+        renderAdminHelpList();
+    }
+
     function renderAll() {
         renderAttendanceSummary();
         renderReceivedSalaries();
         renderBonuses();
         renderRemittances();
         renderLendBorrows();
+        renderHelpRequestsList();
     }
 
     function renderAttendanceSummary() {
@@ -2123,11 +2316,10 @@
 
         if(!user.remittances) user.remittances = [];
 
-        const totalBDT = amount * rate;
         if (editId) {
-            user.remittances = user.remittances.map(r => r.id == editId ? { id: Number(editId), date, amount, rate, totalBDT, note } : r);
+            user.remittances = user.remittances.map(r => r.id == editId ? { id: Number(editId), date, amount, rate, note } : r);
         } else {
-            user.remittances.push({ id: Date.now(), date, amount, rate, totalBDT, note });
+            user.remittances.push({ id: Date.now(), date, amount, rate, note });
         }
 
         await saveActiveUserToFirebase();
@@ -2149,20 +2341,20 @@
         calculateBDT();
 
         document.getElementById('rem-form-title').innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> Edit Remittance';
-        document.getElementById('rem-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
+        document.getElementById('rem-save-btn').innerText = "Update Remittance";
         document.getElementById('rem-cancel-btn').style.display = 'block';
     }
 
     function cancelRemittanceEdit() {
         document.getElementById('rem-edit-id').value = '';
         document.getElementById('rem-form-title').innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> Remittance Entry & History';
-        document.getElementById('rem-save-btn').innerHTML = 'Save Remittance';
+        document.getElementById('rem-save-btn').innerText = "Save Remittance";
         document.getElementById('rem-cancel-btn').style.display = 'none';
         document.getElementById('rem-date').value = getTodayLocalDateString();
         document.getElementById('rem-amount').value = '';
         document.getElementById('rem-rate').value = '';
-        document.getElementById('rem-note').value = '';
         document.getElementById('rem-bdt-total').innerText = '0.00';
+        document.getElementById('rem-note').value = '';
     }
 
     async function deleteRemittance(id) {
@@ -2179,8 +2371,8 @@
         if(!user.remittances) user.remittances = [];
 
         const tbody = document.getElementById('remittance-list');
-        if (tbody) tbody.innerHTML = '';
-        
+        tbody.innerHTML = '';
+
         user.remittances.sort((a,b) => new Date(b.date) - new Date(a.date));
 
         let totalRemittance = 0;
@@ -2191,26 +2383,25 @@
                 displayAmount = r.rate;
             }
             totalRemittance += displayAmount;
+            let totalBDT = displayAmount * r.rate;
 
-            if (tbody) {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${r.date}</td>
-                        <td><b>RM ${displayAmount.toFixed(2)}</b></td>
-                        <td>${r.rate}</td>
-                        <td>৳ ${r.totalBDT.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                        <td>
-                            <button class="table-action-btn edit" onclick="editRemittance(${r.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="table-action-btn delete" onclick="deleteRemittance(${r.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
-                    </tr>
-                `;
-            }
+            tbody.innerHTML += `
+                <tr>
+                    <td>${formatDateToDDMMYY(r.date)}</td>
+                    <td><b>RM ${displayAmount.toFixed(2)}</b></td>
+                    <td>${r.rate}</td>
+                    <td>৳ ${totalBDT.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td>
+                        <button class="table-action-btn edit" onclick="editRemittance(${r.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="table-action-btn delete" onclick="deleteRemittance(${r.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
         });
 
-        const formattedTotal = totalRemittance.toFixed(2);
-        if (document.getElementById('page-total-remittance')) document.getElementById('page-total-remittance').innerText = formattedTotal;
-        if (document.getElementById('top-total-remittance')) document.getElementById('top-total-remittance').innerText = formattedTotal;
+        let formattedRemittance = totalRemittance.toFixed(2);
+        document.getElementById('page-total-remittance').innerText = formattedRemittance;
+        document.getElementById('top-total-remittance').innerText = formattedRemittance;
     }
 
     function renderProfile() {
@@ -2221,145 +2412,140 @@
         document.getElementById('view-name').innerText = p.name || '-';
         document.getElementById('view-designation').innerText = p.designation || '-';
         document.getElementById('view-emp-id').innerText = p.empId || '-';
-        document.getElementById('view-avatar').src = p.avatar || 'https://cdn-icons-png.flaticon.com/510/3135/3135715.png';
-
+        
         const roleBadge = document.getElementById('view-role');
         roleBadge.innerText = user.role || 'USER';
         roleBadge.className = "role-badge role-" + (user.role ? user.role.toLowerCase() : 'user');
 
-        document.getElementById('field-name').innerHTML = `${p.name || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('name')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-designation').innerHTML = `${p.designation || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('designation')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-empId').innerHTML = `${p.empId || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('empId')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-company').innerHTML = `${p.company || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('company')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-phone').innerHTML = `${p.phone || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('phone')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-email').innerHTML = `${p.email || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('email')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-passport').innerHTML = `${p.passport || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('passport')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-bankName').innerHTML = `${p.bankName || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankName')"><i class="fa-solid fa-pen"></i></button>`;
-        document.getElementById('field-bankAcc').innerHTML = `${p.bankAcc || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('bankAcc')"><i class="fa-solid fa-pen"></i></button>`;
+        if(p.avatar) {
+            document.getElementById('view-avatar').src = p.avatar;
+        }
+
+        const fields = ['name', 'designation', 'empId', 'company', 'phone', 'email', 'passport', 'bankName', 'bankAcc'];
+        fields.forEach(f => {
+            const el = document.getElementById('field-' + f);
+            if(el) {
+                el.innerHTML = `${p[f] || '-'} <button class="inline-edit-btn" onclick="enableInlineEdit('${f}')"><i class="fa-solid fa-pen"></i></button>`;
+            }
+        });
+
+        const s = user.settings || {};
+        const darkToggle = document.getElementById('dark-mode-toggle');
+        if(darkToggle) {
+            darkToggle.checked = !!s.darkMode;
+            if(s.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        const langSelector = document.getElementById('lang-selector');
+        if(langSelector && s.lang) {
+            langSelector.value = s.lang;
+            updateAppLanguage(s.lang);
+        }
     }
 
     function enableInlineEdit(fieldKey) {
-        const span = document.getElementById('field-' + fieldKey);
         const user = getActiveUser();
-        const currentVal = user.profile[fieldKey] || '';
-        
-        span.innerHTML = `
+        const p = user.profile || {};
+        const el = document.getElementById('field-' + fieldKey);
+        if(!el) return;
+
+        let currentVal = p[fieldKey] || '';
+        el.innerHTML = `
             <input type="text" id="inline-input-${fieldKey}" value="${currentVal}">
-            <button class="inline-edit-btn" onclick="saveInlineEdit('${fieldKey}')" style="color: #10b981;"><i class="fa-solid fa-check"></i></button>
-            <button class="inline-edit-btn" onclick="renderProfile()" style="color: #ef4444;"><i class="fa-solid fa-xmark"></i></button>
+            <button class="btn btn-sm btn-success" onclick="saveInlineEdit('${fieldKey}')" style="padding: 2px 6px; font-size:10px;"><i class="fa-solid fa-check"></i></button>
         `;
-        document.getElementById('inline-input-' + fieldKey).focus();
     }
 
     async function saveInlineEdit(fieldKey) {
-        const input = document.getElementById('inline-input-' + fieldKey);
-        if(!input) return;
-        const newVal = input.value.trim();
         const user = getActiveUser();
-        
+        const inputEl = document.getElementById(`inline-input-${fieldKey}`);
+        if(!inputEl) return;
+
         if(!user.profile) user.profile = {};
-        user.profile[fieldKey] = newVal;
+        user.profile[fieldKey] = inputEl.value.trim();
 
         await saveActiveUserToFirebase();
+        renderProfile();
         loadAppUI();
     }
 
-    function uploadAvatar(event) {
+    async function uploadAvatar(event) {
         const file = event.target.files[0];
         if(!file) return;
+
         const reader = new FileReader();
         reader.onload = async function(e) {
-            const base64Img = e.target.result;
             const user = getActiveUser();
             if(!user.profile) user.profile = {};
-            user.profile.avatar = base64Img;
+            user.profile.avatar = e.target.result;
             await saveActiveUserToFirebase();
-            loadAppUI();
+            renderProfile();
         };
         reader.readAsDataURL(file);
+    }
+
+    async function toggleDarkMode() {
+        const user = getActiveUser();
+        if(!user.settings) user.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' };
+
+        user.settings.darkMode = document.getElementById('dark-mode-toggle').checked;
+        if(user.settings.darkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        await saveActiveUserToFirebase();
+    }
+
+    async function changeLanguage() {
+        const user = getActiveUser();
+        if(!user.settings) user.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' };
+
+        user.settings.lang = document.getElementById('lang-selector').value;
+        updateAppLanguage(user.settings.lang);
+        await saveActiveUserToFirebase();
     }
 
     function loadActiveUserSettings() {
         const user = getActiveUser();
         if(!user || !user.settings) return;
-        
         const s = user.settings;
-        document.getElementById('cfg-basic').value = s.basic;
-        document.getElementById('cfg-days').value = s.days;
-        document.getElementById('cfg-hours').value = s.hours;
-        document.getElementById('cfg-ot-mult').value = s.otMult;
-
-        const darkToggle = document.getElementById('dark-mode-toggle');
-        darkToggle.checked = !!s.darkMode;
-        if(s.darkMode) {
-            document.body.classList.add('dark-mode');
-            document.getElementById('dark-circle').style.transform = 'translateX(22px)';
-            document.getElementById('dark-slider').style.backgroundColor = '#3b82f6';
-        } else {
-            document.body.classList.remove('dark-mode');
-            document.getElementById('dark-circle').style.transform = 'translateX(0)';
-            document.getElementById('dark-slider').style.backgroundColor = '#cbd5e1';
-        }
-
-        if(s.lang) {
-            document.getElementById('lang-selector').value = s.lang;
-            updateAppLanguage(s.lang);
-        }
-
+        if(document.getElementById('cfg-basic')) document.getElementById('cfg-basic').value = s.basic || 1700;
+        if(document.getElementById('cfg-days')) document.getElementById('cfg-days').value = s.days || 26;
+        if(document.getElementById('cfg-hours')) document.getElementById('cfg-hours').value = s.hours || 8;
+        if(document.getElementById('cfg-ot-mult')) document.getElementById('cfg-ot-mult').value = s.otMult || 1.5;
         calculateRatePreview(false);
     }
 
-    async function calculateRatePreview(save) {
-        const basic = parseFloat(document.getElementById('cfg-basic').value) || 0;
-        const days = parseFloat(document.getElementById('cfg-days').value) || 1;
-        const hours = parseFloat(document.getElementById('cfg-hours').value) || 1;
-        const otMult = parseFloat(document.getElementById('cfg-ot-mult').value) || 1;
+    function calculateRatePreview(saveToUser = false) {
+        const basic = parseFloat(document.getElementById('cfg-basic').value) || 1700;
+        const days = parseFloat(document.getElementById('cfg-days').value) || 26;
+        const hours = parseFloat(document.getElementById('cfg-hours').value) || 8;
+        const otMult = parseFloat(document.getElementById('cfg-ot-mult').value) || 1.5;
 
-        let daily = basic / days;
-        let hourly = daily / hours;
-        let sundayRate = daily * 2;
-        let holidayRate = daily * 3;
+        const daily = basic / days;
+        const hourly = daily / hours;
+        const regular = daily;
+        const sunday = daily * 2;
+        const holiday = daily * 3;
 
-        document.getElementById('rate-regular').innerText = daily.toFixed(2);
-        document.getElementById('rate-sunday').innerText = sundayRate.toFixed(2);
-        document.getElementById('rate-holiday').innerText = holidayRate.toFixed(2);
+        document.getElementById('rate-regular').innerText = regular.toFixed(2);
+        document.getElementById('rate-sunday').innerText = sunday.toFixed(2);
+        document.getElementById('rate-holiday').innerText = holiday.toFixed(2);
 
-        if(save) {
+        if(saveToUser) {
             const user = getActiveUser();
-            user.settings = { basic, days, hours, otMult, darkMode: user.settings ? user.settings.darkMode : false, lang: user.settings ? user.settings.lang : 'en' };
-            await saveActiveUserToFirebase();
+            if(!user.settings) user.settings = {};
+            user.settings.basic = basic;
+            user.settings.days = days;
+            user.settings.hours = hours;
+            user.settings.otMult = otMult;
+            saveActiveUserToFirebase();
             renderAttendanceSummary();
         }
-    }
-
-    async function toggleDarkMode() {
-        const darkToggle = document.getElementById('dark-mode-toggle');
-        const isDark = darkToggle.checked;
-        const user = getActiveUser();
-
-        if(!user.settings) user.settings = {};
-        user.settings.darkMode = isDark;
-
-        if(isDark) {
-            document.body.classList.add('dark-mode');
-            document.getElementById('dark-circle').style.transform = 'translateX(22px)';
-            document.getElementById('dark-slider').style.backgroundColor = '#3b82f6';
-        } else {
-            document.body.classList.remove('dark-mode');
-            document.getElementById('dark-circle').style.transform = 'translateX(0)';
-            document.getElementById('dark-slider').style.backgroundColor = '#cbd5e1';
-        }
-
-        await saveActiveUserToFirebase();
-    }
-
-    async function changeLanguage() {
-        const lang = document.getElementById('lang-selector').value;
-        const user = getActiveUser();
-        if(!user.settings) user.settings = {};
-        user.settings.lang = lang;
-        await saveActiveUserToFirebase();
-        updateAppLanguage(lang);
     }
 
     function renderAdminUserList() {
@@ -2368,36 +2554,31 @@
         tbody.innerHTML = '';
 
         appData.users.forEach(u => {
-            const name = (u.profile && u.profile.name) ? u.profile.name : 'Unknown';
-            const email = (u.profile && u.profile.email) ? u.profile.email : '-';
-            const role = u.role || 'User';
-
+            const p = u.profile || {};
+            const isMe = u.id === activeUserId;
             tbody.innerHTML += `
                 <tr>
-                    <td style="text-align: left; padding-left: 6px;">
-                        <b>${name}</b><br><span style="font-size: 10px; color: #64748b;">${email}</span>
-                    </td>
-                    <td><span class="role-badge role-${role.toLowerCase()}">${role}</span></td>
+                    <td><b>${p.name || 'No Name'}</b><br><small style="color:#64748b;">${p.email || '-'}</small></td>
+                    <td><span class="role-badge role-${(u.role || 'user').toLowerCase()}">${u.role || 'User'}</span></td>
                     <td>
-                        <button class="table-action-btn edit" onclick="manageUserEntries('${u.id}')" title="Manage Entries"><i class="fa-solid fa-folder-open"></i></button>
-                        <button class="table-action-btn edit" onclick="openUserEditForm('${u.id}')" title="Edit Role"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="table-action-btn delete" onclick="deleteUser('${u.id}')" title="Delete User"><i class="fa-solid fa-trash-can"></i></button>
+                        <button class="btn btn-sm btn-outline" onclick="manageUserEntries('${u.id}')" title="Manage Entries"><i class="fa-solid fa-folder-open"></i></button>
+                        <button class="table-action-btn edit" onclick="editUserByAdmin('${u.id}')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                        ${!isMe ? `<button class="table-action-btn delete" onclick="deleteUserByAdmin('${u.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                     </td>
                 </tr>
             `;
         });
     }
 
-    function openUserEditForm(userId) {
-        const u = appData.users.find(item => item.id === userId);
+    function editUserByAdmin(userId) {
+        const u = appData.users.find(x => x.id === userId);
         if(!u) return;
 
-        document.getElementById('admin-user-id').value = u.id;
-        document.getElementById('admin-user-name').value = (u.profile && u.profile.name) ? u.profile.name : '';
-        document.getElementById('admin-user-email').value = (u.profile && u.profile.email) ? u.profile.email : '';
-        document.getElementById('admin-user-role').value = u.role || 'User';
-
         document.getElementById('user-edit-section').classList.remove('hidden');
+        document.getElementById('admin-user-id').value = u.id;
+        document.getElementById('admin-user-name').value = u.profile.name || '';
+        document.getElementById('admin-user-email').value = u.profile.email || '';
+        document.getElementById('admin-user-role').value = u.role || 'User';
     }
 
     function hideUserForm() {
@@ -2407,61 +2588,30 @@
     async function saveUserFromAdmin() {
         const userId = document.getElementById('admin-user-id').value;
         const name = document.getElementById('admin-user-name').value.trim();
-        const email = document.getElementById('admin-user-email').value.trim();
         const role = document.getElementById('admin-user-role').value;
 
-        if(!name || !email) {
-            alert("Name and Email are required!");
-            return;
-        }
-
-        const u = appData.users.find(item => item.id === userId);
+        const u = appData.users.find(x => x.id === userId);
         if(!u) return;
 
-        u.role = role;
-        if(!u.profile) u.profile = {};
         u.profile.name = name;
-        u.profile.email = email;
+        u.role = role;
 
-        await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(u.id)), u);
+        await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(userId)), u);
         hideUserForm();
         renderAdminUserList();
         alert("User updated successfully!");
     }
 
-    // অ্যাডমিন যেকোনো ইউজার ডিলিট করার ফাংশন
-    async function deleteUser(userId) {
-        if(!isAdmin()) {
-            alert("Only admin can delete users!");
-            return;
-        }
-
-        const targetUser = appData.users.find(u => u.id === userId);
-        if(targetUser && targetUser.profile && targetUser.profile.email && targetUser.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-            alert("The primary admin account cannot be deleted!");
-            return;
-        }
-
-        if(!confirm("Are you sure you want to completely delete this user and all their records?")) return;
-
+    async function deleteUserByAdmin(userId) {
+        if(!confirm("Are you sure you want to delete this user completely?")) return;
         try {
-            // ফায়ারস্টোর ডাটাবেজ থেকে ইউজারের ডকুমেন্ট ডিলিট করা
             await window.fsMethods.deleteDoc(window.fsMethods.doc(window.db, "users", String(userId)));
-
-            // লোকাল অ্যাপ ডাটা থেকে ইউজার রিমুভ করা
             appData.users = appData.users.filter(u => u.id !== userId);
-
-            // যদি ডিলিট করা ইউজার ম্যানেজ করা হচ্ছিল, তবে ম্যানেজিং মোড বন্ধ করা
-            if(managingUserId === userId) {
-                managingUserId = null;
-                loadAppUI();
-            }
-
             renderAdminUserList();
-            alert("User deleted successfully from the system!");
-        } catch (error) {
-            console.error("Error deleting user:", error);
-            alert("Failed to delete user. Please check console.");
+            alert("User deleted successfully!");
+        } catch(e) {
+            console.error(e);
+            alert("Failed to delete user!");
         }
     }
 </script>
