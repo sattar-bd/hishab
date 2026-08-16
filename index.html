@@ -242,6 +242,20 @@
         
         .auth-switch { margin-top: 15px; font-size: 12px; color: #64748b; }
         .auth-switch span { color: #2563eb; cursor: pointer; font-weight: bold; text-decoration: underline; }
+
+        .lb-person-card{border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:7px;background:#fff;cursor:pointer;transition:.15s}
+        .lb-person-card:hover{border-color:#3b82f6;box-shadow:0 3px 10px rgba(37,99,235,.10)}
+        body.dark-mode .lb-person-card{background:#1e293b;border-color:#334155}
+        .lb-person-name{font-size:13px;font-weight:800;color:#0f172a}
+        body.dark-mode .lb-person-name{color:#f8fafc}
+        .lb-person-meta{font-size:10px;color:#64748b;margin-top:3px}
+        .lb-balance{font-size:13px;font-weight:800}
+        .lb-detail-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+        .lb-detail-box{padding:8px;border-radius:7px;text-align:center;border:1px solid #e2e8f0;background:#f8fafc}
+        .lb-detail-box span{display:block;font-size:9px;color:#64748b}
+        .lb-detail-box b{font-size:12px}
+        @media(max-width:480px){.lb-detail-summary{grid-template-columns:1fr 1fr 1fr}.lb-detail-box{padding:6px 3px}}
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -649,41 +663,65 @@
 
         <!-- Lend & Borrow (Personal Accounts) Section -->
         <div class="card" style="margin-top: 10px;">
-            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
                 <span><i class="fa-solid fa-handshake-angle"></i> <span data-i18n="lend_borrow">Lend & Borrow (Personal Accounts)</span></span>
-                <button class="btn btn-sm btn-success" onclick="openLendBorrowModal()"><i class="fa-solid fa-plus"></i> <span data-i18n="new_entry">New Entry</span></button>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;">
-                <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; padding: 8px; text-align: center;">
-                    <div style="font-size: 10px; color: #047857; font-weight: bold;" data-i18n="receivable">I Will Receive (Receivable)</div>
-                    <div style="font-size: 13px; font-weight: bold; color: #059669;">RM <span id="total-lend-given">0.00</span></div>
-                </div>
-                <div style="background: #fef2f2; border: 1px solid #ef4444; border-radius: 6px; padding: 8px; text-align: center;">
-                    <div style="font-size: 10px; color: #b91c1c; font-weight: bold;" data-i18n="payable">I Will Pay (Payable)</div>
-                    <div style="font-size: 13px; font-weight: bold; color: #dc2626;">RM <span id="total-borrow-taken">0.00</span></div>
-                </div>
+                <button class="btn btn-sm btn-success" onclick="openPersonalAccountCreate()">
+                    <i class="fa-solid fa-user-plus"></i> নতুন একাউন্ট
+                </button>
             </div>
 
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th data-i18n="date">Date</th>
-                            <th data-i18n="name">Name</th>
-                            <th data-i18n="type">Type</th>
-                            <th data-i18n="amount_rm">Amount (RM)</th>
-                            <th data-i18n="note">Note</th>
-                            <th data-i18n="action">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lend-borrow-list"></tbody>
-                </table>
+            <!-- Person account list -->
+            <div id="lb-person-list-view">
+                <div id="lb-person-accounts"></div>
+            </div>
+
+            <!-- Individual person account detail INSIDE Remittance page -->
+            <div id="lb-account-detail" style="display:none;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+                    <button class="btn btn-sm btn-success" onclick="openNewLendBorrowForCurrentAccount()">
+                        <i class="fa-solid fa-plus"></i> নতুন লেনদেন
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="closeLendBorrowAccount()">
+                        <i class="fa-solid fa-arrow-left"></i> ফিরে যান
+                    </button>
+                </div>
+                <div id="lb-account-detail-content"></div>
             </div>
         </div>
     </div>
 
-    <!-- Remittance Modern Modal Popup -->
+    
+        <!-- Personal Account Create Modal -->
+        <div id="personal-account-create-modal" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width:430px;">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-user-plus"></i> নতুন ব্যক্তিগত একাউন্ট</h3>
+                    <button class="modal-close" onclick="closePersonalAccountCreate()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>ব্যক্তির নাম *</label>
+                        <input type="text" id="personal-new-name" class="form-control" placeholder="যেমন: আতান" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>মোবাইল নম্বর</label>
+                        <input type="text" id="personal-new-phone" class="form-control" placeholder="মোবাইল নম্বর" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>নোট</label>
+                        <input type="text" id="personal-new-note" class="form-control" placeholder="ঐচ্ছিক">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="closePersonalAccountCreate()">বাতিল</button>
+                    <button class="btn btn-success" onclick="createPersonalAccount()">
+                        <i class="fa-solid fa-check"></i> একাউন্ট খুলুন
+                    </button>
+                </div>
+            </div>
+        </div>
+
+<!-- Remittance Modern Modal Popup -->
     <div id="remittance-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 550px;">
             <div class="card-title">
@@ -1734,6 +1772,9 @@
 
     function openLendBorrowModal() {
         document.getElementById('lend-borrow-modal').classList.remove('hidden');
+        if(!currentLendBorrowAccountName) {
+            document.getElementById('lb-name').readOnly = false;
+        }
     }
 
     function closeLendBorrowModal() {
@@ -2051,6 +2092,165 @@
         });
     }
 
+
+
+    function openPersonalAccountCreate() {
+        const m = document.getElementById('personal-account-create-modal');
+        if(m) {
+            m.classList.remove('hidden');
+            setTimeout(() => document.getElementById('personal-new-name')?.focus(), 50);
+        }
+    }
+
+    function closePersonalAccountCreate() {
+        const m = document.getElementById('personal-account-create-modal');
+        if(m) m.classList.add('hidden');
+        const n = document.getElementById('personal-new-name');
+        const ph = document.getElementById('personal-new-phone');
+        const no = document.getElementById('personal-new-note');
+        if(n) n.value = '';
+        if(ph) ph.value = '';
+        if(no) no.value = '';
+    }
+
+    async function createPersonalAccount() {
+        const user = getActiveUser();
+        if(!user) return;
+
+        const nameEl = document.getElementById('personal-new-name');
+        const phoneEl = document.getElementById('personal-new-phone');
+        const noteEl = document.getElementById('personal-new-note');
+
+        const name = (nameEl?.value || '').trim();
+        const phone = (phoneEl?.value || '').trim();
+        const note = (noteEl?.value || '').trim();
+
+        if(!name) {
+            alert('দয়া করে ব্যক্তির নাম লিখুন।');
+            nameEl?.focus();
+            return;
+        }
+
+        if(!user.lendBorrows) user.lendBorrows = [];
+
+        // Create an account even before its first transaction.
+        // Store a zero-value account marker so the name remains visible.
+        const exists = user.lendBorrows.some(x =>
+            String(x.name || '').trim().toLowerCase() === name.toLowerCase() &&
+            x.accountOnly === true
+        );
+
+        // If there are already transactions under the same name, treat it as an existing account.
+        const hasTransactions = user.lendBorrows.some(x =>
+            String(x.name || '').trim().toLowerCase() === name.toLowerCase()
+        );
+
+        if(exists || hasTransactions) {
+            alert('এই নামে একাউন্ট ইতিমধ্যে আছে।');
+            return;
+        }
+
+        user.lendBorrows.push({
+            id: Date.now(),
+            date: getTodayLocalDateString(),
+            name: name,
+            type: 'given',
+            amount: 0,
+            note: note || '',
+            dueDate: '',
+            phone: phone,
+            accountOnly: true
+        });
+
+        await saveActiveUserToFirebase();
+        closePersonalAccountCreate();
+        renderLendBorrows();
+        alert('নতুন ব্যক্তিগত একাউন্ট তৈরি হয়েছে। এখন নামের উপর ক্লিক করে লেনদেন যোগ করুন।');
+    }
+
+    let currentLendBorrowAccountName = '';
+
+    function lbEsc(v) {
+        return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    function openLendBorrowAccount(name) {
+        currentLendBorrowAccountName = name;
+        document.getElementById('lb-person-list-view').style.display = 'none';
+        document.getElementById('lb-account-detail').style.display = 'block';
+        renderLendBorrowAccountDetail(name);
+    }
+
+    function closeLendBorrowAccount() {
+        currentLendBorrowAccountName = '';
+        document.getElementById('lb-account-detail').style.display = 'none';
+        document.getElementById('lb-person-list-view').style.display = 'block';
+        renderLendBorrows();
+    }
+
+    function openNewLendBorrowForCurrentAccount() {
+        openLendBorrowModal();
+        document.getElementById('lb-name').value = currentLendBorrowAccountName || '';
+        document.getElementById('lb-name').readOnly = !!currentLendBorrowAccountName;
+        document.getElementById('lb-date').value = getTodayLocalDateString();
+    }
+
+    function renderLendBorrowAccountDetail(name) {
+        const user = getActiveUser();
+        if(!user) return;
+        if(!user.lendBorrows) user.lendBorrows = [];
+
+        const items = user.lendBorrows
+            .filter(x => !x.accountOnly && String(x.name).trim().toLowerCase() === String(name).trim().toLowerCase())
+            .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        let given = 0, taken = 0, running = 0;
+        items.forEach(x => x.type === 'given' ? given += Number(x.amount||0) : taken += Number(x.amount||0));
+        running = given - taken;
+
+        const status = running > 0
+            ? '<span style="color:#059669;font-weight:bold;">আমি পাবো</span>'
+            : running < 0
+                ? '<span style="color:#dc2626;font-weight:bold;">আমাকে দিতে হবে</span>'
+                : '<span style="color:#64748b;font-weight:bold;">হিসাব সমান</span>';
+
+        let balance = 0;
+        const rows = items.map(x => {
+            balance += x.type === 'given' ? Number(x.amount||0) : -Number(x.amount||0);
+            return `<tr>
+                <td>${lbEsc(x.date)}</td>
+                <td style="color:${x.type==='given'?'#059669':'#dc2626'};font-weight:bold;">${x.type==='given'?'আমি দিলাম':'আমি নিলাম'}</td>
+                <td><b>RM ${Number(x.amount||0).toFixed(2)}</b></td>
+                <td>${lbEsc(x.note || '-')}</td>
+                <td><b>RM ${Math.abs(balance).toFixed(2)}</b></td>
+                <td>
+                    <button class="table-action-btn edit" onclick="editLendBorrow(${x.id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="table-action-btn delete" onclick="deleteLendBorrow(${x.id})"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('lb-account-detail-content').innerHTML = `
+            <div class="card" style="margin:0 0 8px 0;background:linear-gradient(135deg,#1e293b,#2563eb);color:#fff;">
+                <div style="font-size:16px;font-weight:800;">👤 ${lbEsc(name)}</div>
+                <div style="font-size:10px;opacity:.85;margin-top:3px;">এই ব্যক্তির সব ধার দেওয়া ও নেওয়ার হিসাব</div>
+            </div>
+            <div class="lb-detail-summary">
+                <div class="lb-detail-box"><span>মোট দিয়েছি</span><b style="color:#059669;">RM ${given.toFixed(2)}</b></div>
+                <div class="lb-detail-box"><span>মোট নিয়েছি</span><b style="color:#dc2626;">RM ${taken.toFixed(2)}</b></div>
+                <div class="lb-detail-box"><span>বর্তমান হিসাব</span><b>RM ${Math.abs(running).toFixed(2)}</b></div>
+            </div>
+            <div style="text-align:center;font-size:11px;margin-bottom:8px;">${status}</div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr>
+                        <th>তারিখ</th><th>লেনদেন</th><th>পরিমাণ</th><th>বিবরণ</th><th>ব্যালেন্স</th><th>অ্যাকশন</th>
+                    </tr></thead>
+                    <tbody>${rows || '<tr><td colspan="6" style="padding:18px;color:#64748b;">এখনও কোনো লেনদেন নেই।</td></tr>'}</tbody>
+                </table>
+            </div>`;
+    }
+
     async function saveLendBorrow() {
         const user = getActiveUser();
         const editId = document.getElementById('lb-edit-id').value;
@@ -2069,15 +2269,16 @@
         if(!user.lendBorrows) user.lendBorrows = [];
 
         if (editId) {
-            user.lendBorrows = user.lendBorrows.map(item => item.id == editId ? { id: Number(editId), date, name, type, amount, note, dueDate } : item);
+            user.lendBorrows = user.lendBorrows.map(item => item.id == editId ? { id: Number(editId), date, name, type, amount, note, dueDate, accountOnly: false } : item);
         } else {
-            user.lendBorrows.push({ id: Date.now(), date, name, type, amount, note, dueDate });
+            user.lendBorrows.push({ id: Date.now(), date, name, type, amount, note, dueDate, accountOnly: false });
         }
 
         await saveActiveUserToFirebase();
         cancelLendBorrowEdit();
         closeLendBorrowModal();
         renderLendBorrows();
+        if(currentLendBorrowAccountName) renderLendBorrowAccountDetail(currentLendBorrowAccountName);
         alert("Account saved successfully!");
     }
 
@@ -2089,6 +2290,8 @@
         document.getElementById('lb-edit-id').value = item.id;
         document.getElementById('lb-date').value = item.date;
         document.getElementById('lb-name').value = item.name;
+        document.getElementById('lb-name').readOnly = true;
+        currentLendBorrowAccountName = item.name;
         document.getElementById('lb-type').value = item.type;
         document.getElementById('lb-amount').value = item.amount;
         document.getElementById('lb-note').value = item.note || '';
@@ -2107,6 +2310,7 @@
         document.getElementById('lb-cancel-btn').style.display = 'none';
         document.getElementById('lb-date').value = getTodayLocalDateString();
         document.getElementById('lb-name').value = '';
+        document.getElementById('lb-name').readOnly = false;
         document.getElementById('lb-amount').value = '';
         document.getElementById('lb-note').value = '';
         const due = document.getElementById('lb-due-date'); if(due) due.value = '';
@@ -2118,6 +2322,7 @@
         user.lendBorrows = user.lendBorrows.filter(i => i.id !== id);
         await saveActiveUserToFirebase();
         renderLendBorrows();
+        if(currentLendBorrowAccountName) renderLendBorrowAccountDetail(currentLendBorrowAccountName);
     }
 
     function renderLendBorrows() {
@@ -2125,49 +2330,56 @@
         if(!user) return;
         if(!user.lendBorrows) user.lendBorrows = [];
 
-        const tbody = document.getElementById('lend-borrow-list');
-        if (tbody) {
-            tbody.innerHTML = '';
-        }
-        user.lendBorrows.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-        let totalGiven = 0;
-        let totalTaken = 0;
+        let totalGiven = 0, totalTaken = 0;
+        const people = {};
 
         user.lendBorrows.forEach(item => {
-            if(item.type === 'given') {
-                totalGiven += item.amount;
-            } else {
-                totalTaken += item.amount;
-            }
-
-            const badgeColor = item.type === 'given' ? 'color: #059669; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
-            const typeText = item.type === 'given' ? 'Given (Receivable)' : 'Taken (Payable)';
-
-            if (tbody) {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.date}</td>
-                        <td><b>${item.name}</b></td>
-                        <td style="${badgeColor}">${typeText}</td>
-                        <td><b>RM ${item.amount.toFixed(2)}</b></td>
-                        <td>${item.note || '-'}</td>
-                        <td>
-                            <button class="table-action-btn edit" onclick="editLendBorrow(${item.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="table-action-btn delete" onclick="deleteLendBorrow(${item.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
-                    </tr>
-                `;
+            const name = String(item.name || '').trim();
+            if(!name) return;
+            if(!people[name]) people[name] = [];
+            people[name].push(item);
+            if(!item.accountOnly) {
+                if(item.type === 'given') totalGiven += Number(item.amount||0);
+                else totalTaken += Number(item.amount||0);
             }
         });
 
+        const box = document.getElementById('lb-person-accounts');
+        if(box) {
+            const names = Object.keys(people).sort((a,b)=>a.localeCompare(b));
+            box.innerHTML = names.length ? names.map(name => {
+                const arr = people[name];
+                const txs = arr.filter(x => !x.accountOnly);
+                const given = txs.filter(x=>x.type==='given').reduce((s,x)=>s+Number(x.amount||0),0);
+                const taken = txs.filter(x=>x.type!=='given').reduce((s,x)=>s+Number(x.amount||0),0);
+                const bal = given - taken;
+                const status = bal > 0 ? 'আমি পাবো' : bal < 0 ? 'আমি দেবো' : 'হিসাব সমান';
+                const color = bal > 0 ? '#059669' : bal < 0 ? '#dc2626' : '#64748b';
+                return `<div class="lb-person-card" onclick="openLendBorrowAccount('${lbEsc(name).replace(/'/g,"\\'")}')">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                        <div>
+                            <div class="lb-person-name"><i class="fa-solid fa-user"></i> ${lbEsc(name)}</div>
+                            <div class="lb-person-meta">${txs.length} টি লেনদেন • বিস্তারিত হিসাব দেখতে ক্লিক করুন</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="lb-balance" style="color:${color};">RM ${Math.abs(bal).toFixed(2)}</div>
+                            <div class="lb-person-meta">${status}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') : '<div style="text-align:center;padding:18px;color:#64748b;font-size:11px;">কোনো ব্যক্তির একাউন্ট নেই। <b>New Entry</b> চাপ দিয়ে প্রথম লেনদেন যোগ করুন।</div>';
+        }
+
         const totalGivenStr = totalGiven.toFixed(2);
         const totalTakenStr = totalTaken.toFixed(2);
+        if(document.getElementById('total-lend-given')) document.getElementById('total-lend-given').innerText = totalGivenStr;
+        if(document.getElementById('total-borrow-taken')) document.getElementById('total-borrow-taken').innerText = totalTakenStr;
+        if(document.getElementById('entry-total-lend-given')) document.getElementById('entry-total-lend-given').innerText = totalGivenStr;
+        if(document.getElementById('entry-total-borrow-taken')) document.getElementById('entry-total-borrow-taken').innerText = totalTakenStr;
 
-        if (document.getElementById('total-lend-given')) document.getElementById('total-lend-given').innerText = totalGivenStr;
-        if (document.getElementById('total-borrow-taken')) document.getElementById('total-borrow-taken').innerText = totalTakenStr;
-        if (document.getElementById('entry-total-lend-given')) document.getElementById('entry-total-lend-given').innerText = totalGivenStr;
-        if (document.getElementById('entry-total-borrow-taken')) document.getElementById('entry-total-borrow-taken').innerText = totalTakenStr;
+        if(currentLendBorrowAccountName && document.getElementById('lb-account-detail').style.display !== 'none') {
+            renderLendBorrowAccountDetail(currentLendBorrowAccountName);
+        }
     }
 
     // Help & Support Feature Functions
