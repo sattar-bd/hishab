@@ -681,9 +681,14 @@
                     <button class="btn btn-sm btn-success" onclick="openNewLendBorrowForCurrentAccount()">
                         <i class="fa-solid fa-plus"></i> নতুন লেনদেন
                     </button>
-                    <button class="btn btn-sm btn-outline" onclick="closeLendBorrowAccount()">
-                        <i class="fa-solid fa-arrow-left"></i> ফিরে যান
-                    </button>
+                    <div style="display:flex;gap:5px;align-items:center;">
+                        <button class="btn btn-sm btn-danger" onclick="deletePersonalAccount(currentLendBorrowAccountName)" title="একাউন্ট ডিলিট">
+                            <i class="fa-solid fa-trash-can"></i> একাউন্ট ডিলিট
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="closeLendBorrowAccount()">
+                            <i class="fa-solid fa-arrow-left"></i> ফিরে যান
+                        </button>
+                    </div>
                 </div>
                 <div id="lb-account-detail-content"></div>
             </div>
@@ -2314,6 +2319,43 @@
         document.getElementById('lb-amount').value = '';
         document.getElementById('lb-note').value = '';
         const due = document.getElementById('lb-due-date'); if(due) due.value = '';
+    }
+
+    async function deletePersonalAccount(name) {
+        const user = getActiveUser();
+        if(!user || !user.lendBorrows || !name) return;
+
+        const accountName = String(name).trim();
+        const accountItems = user.lendBorrows.filter(item =>
+            String(item.name || '').trim().toLowerCase() === accountName.toLowerCase()
+        );
+
+        if(accountItems.length === 0) {
+            alert('এই একাউন্ট পাওয়া যায়নি।');
+            return;
+        }
+
+        const hasTransactions = accountItems.some(item => !item.accountOnly);
+        const message = hasTransactions
+            ? `“${accountName}” একাউন্ট এবং এই ব্যক্তির সব লেনদেনও ডিলিট হবে।\n\nআপনি কি নিশ্চিত?`
+            : `“${accountName}” একাউন্ট ডিলিট করবেন?`;
+
+        if(!confirm(message)) return;
+
+        user.lendBorrows = user.lendBorrows.filter(item =>
+            String(item.name || '').trim().toLowerCase() !== accountName.toLowerCase()
+        );
+
+        await saveActiveUserToFirebase();
+
+        currentLendBorrowAccountName = '';
+        const detail = document.getElementById('lb-account-detail');
+        const list = document.getElementById('lb-person-list-view');
+        if(detail) detail.style.display = 'none';
+        if(list) list.style.display = 'block';
+
+        renderLendBorrows();
+        alert('ব্যক্তিগত একাউন্ট সফলভাবে ডিলিট হয়েছে।');
     }
 
     async function deleteLendBorrow(id) {
