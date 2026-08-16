@@ -138,6 +138,42 @@
         th, td { border: 1px solid #e2e8f0; padding: 6px 4px; text-align: center; }
         th { background: #f8fafc; color: #334155; }
 
+        /* Attendance table: full-width mobile layout, no side whitespace and no wrapping */
+        #page-entry { padding-left: 4px; padding-right: 4px; }
+        #attendance-records-card {
+            width: calc(100% + 8px);
+            margin-left: -4px;
+            margin-right: -4px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        #attendance-records-card .card-title { margin-bottom: 6px; padding-bottom: 4px; }
+        #attendance-records-card .attendance-table-wrap { width: 100%; margin: 0; overflow-x: hidden; }
+        #attendance-records-card table { width: 100%; min-width: 0 !important; table-layout: fixed; margin-top: 4px; font-size: 11px; }
+        #attendance-records-card th,
+        #attendance-records-card td {
+            padding: 7px 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+            line-height: 1.2;
+        }
+        #attendance-records-card th:nth-child(1), #attendance-records-card td:nth-child(1) { width: 17%; }
+        #attendance-records-card th:nth-child(2), #attendance-records-card td:nth-child(2) { width: 18%; }
+        #attendance-records-card th:nth-child(3), #attendance-records-card td:nth-child(3) { width: 24%; }
+        #attendance-records-card th:nth-child(4), #attendance-records-card td:nth-child(4) { width: 9%; }
+        #attendance-records-card th:nth-child(5), #attendance-records-card td:nth-child(5) { width: 16%; }
+        #attendance-records-card th:nth-child(6), #attendance-records-card td:nth-child(6) { width: 16%; }
+        #attendance-records-card .table-action-btn { padding: 2px 3px; font-size: 15px; }
+        @media (max-width: 480px) {
+            .content-page#page-entry { padding-left: 2px; padding-right: 2px; }
+            #attendance-records-card { width: calc(100% + 4px); margin-left: -2px; margin-right: -2px; padding: 3px; }
+            #attendance-records-card .card-title { font-size: 12px; }
+            #attendance-records-card table { font-size: 10.5px; }
+            #attendance-records-card th, #attendance-records-card td { padding: 7px 1px; }
+            #attendance-records-card .table-action-btn { font-size: 14px; padding: 2px 2px; }
+        }
+
         .navbar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 6px 0; z-index: 1000; }
         .nav-item { text-align: center; color: #64748b; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; }
         .nav-item i { font-size: 15px; display: block; margin-bottom: 2px; }
@@ -191,6 +227,9 @@
         .auth-switch { margin-top: 15px; font-size: 12px; color: #64748b; }
         .auth-switch span { color: #2563eb; cursor: pointer; font-weight: bold; text-decoration: underline; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -543,12 +582,16 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="card" id="attendance-records-card">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap;">
                 <span data-i18n="attendance_records">Attendance Records (Selected Month Entry)</span>
-                <button class="btn btn-sm btn-warning" onclick="openBonusModal()"><i class="fa-solid fa-award"></i> <span data-i18n="add_bonus">Add Bonus</span></button>
+                <div class="export-buttons">
+                    <button class="btn btn-sm btn-danger" onclick="downloadAttendancePDF()" title="Download PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                    <button class="btn btn-sm btn-success" onclick="downloadAttendanceJPG()" title="Download JPG"><i class="fa-solid fa-image"></i> JPG</button>
+                    <button class="btn btn-sm btn-warning" onclick="openBonusModal()"><i class="fa-solid fa-award"></i> <span data-i18n="add_bonus">Add Bonus</span></button>
+                </div>
             </div>
-            <div style="overflow-x:auto;">
+            <div class="attendance-table-wrap" style="overflow-x:auto;">
                 <table>
                     <thead>
                         <tr>
@@ -2192,6 +2235,137 @@
         renderRemittances();
         renderLendBorrows();
         renderHelpRequestsList();
+    }
+
+    function getAttendanceExportData() {
+        const user = getActiveUser();
+        if(!user) return null;
+        const selectedMonth = document.getElementById('summary-filter-month').value;
+        if(!selectedMonth) {
+            alert('Please select a month first.');
+            return null;
+        }
+
+        const rows = [];
+        let dutyDays = 0, sundayDays = 0, holidayDays = 0, totalOT = 0;
+        const dailyRate = user.settings.basic / (user.settings.days || 1);
+        const hourlyRate = dailyRate / (user.settings.hours || 1);
+        const otRate = hourlyRate * user.settings.otMult;
+        let calculatedSalary = 0;
+
+        (user.attendances || []).slice().sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => {
+            if(!isDateInCycle(item.date, selectedMonth)) return;
+            rows.push([
+                formatDateToDDMMYY(item.date),
+                item.day || '-',
+                `${item.inTime || '-'}-${item.outTime || '-'}`,
+                `${Number(item.ot || 0).toFixed(1)}h`,
+                item.type || '-'
+            ]);
+            if(item.type === 'Regular') { dutyDays++; calculatedSalary += dailyRate; }
+            else if(item.type === 'Sunday') { sundayDays++; calculatedSalary += dailyRate * 2; }
+            else if(item.type === 'Saturday') { dutyDays++; calculatedSalary += dailyRate; }
+            else if(item.type === 'Holiday') { holidayDays++; calculatedSalary += dailyRate * 3; }
+            totalOT += Number(item.ot || 0);
+            calculatedSalary += Number(item.ot || 0) * otRate;
+        });
+
+        let monthlyBonus = 0;
+        if(user.bonuses) {
+            const foundBonus = user.bonuses.find(b => b.month === selectedMonth);
+            if(foundBonus) monthlyBonus = Number(foundBonus.amount) || 0;
+        }
+        calculatedSalary += monthlyBonus;
+
+        const range = getCycleDateRange(selectedMonth);
+        const cycleText = range.start && range.end
+            ? `Calculation Cycle: ${formatDateToDDMMYY(range.start)} to ${formatDateToDDMMYY(range.end)}`
+            : '';
+
+        return {
+            user, selectedMonth, rows, cycleText,
+            dutyDays, sundayDays, holidayDays, totalOT,
+            monthlyBonus, calculatedSalary
+        };
+    }
+
+    function getExportFileName(data, ext) {
+        const safeName = ((data.user.profile && data.user.profile.name) || 'Attendance').replace(/[^a-z0-9_-]+/gi, '_');
+        return `${safeName}_Attendance_${data.selectedMonth}.${ext}`;
+    }
+
+    async function downloadAttendanceJPG() {
+        const data = getAttendanceExportData();
+        if(!data) return;
+        if(typeof html2canvas === 'undefined') {
+            alert('JPG export library is not loaded. Please check your internet connection and try again.');
+            return;
+        }
+
+        const exportBox = document.createElement('div');
+        exportBox.style.cssText = 'position:fixed;left:-100000px;top:0;width:1000px;background:#fff;color:#111;padding:28px;font-family:Segoe UI,Arial,sans-serif;z-index:-1;';
+        exportBox.innerHTML = `
+            <div style="font-size:24px;font-weight:700;margin-bottom:6px;">Attendance Records (Selected Month Entry)</div>
+            <div style="font-size:14px;color:#475569;margin-bottom:18px;">${data.cycleText}</div>
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <div style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;"><b>Duty</b><br>${data.dutyDays} days</div>
+                <div style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;"><b>Sunday</b><br>${data.sundayDays} days</div>
+                <div style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;"><b>Holiday</b><br>${data.holidayDays} days</div>
+                <div style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;"><b>OT</b><br>${data.totalOT.toFixed(1)} hours</div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead><tr>${['Date','Day','In-Out','OT','Type'].map(h=>`<th style="border:1px solid #cbd5e1;background:#f1f5f9;padding:8px;">${h}</th>`).join('')}</tr></thead>
+                <tbody>${data.rows.length ? data.rows.map(r=>`<tr>${r.map(c=>`<td style="border:1px solid #cbd5e1;padding:7px;text-align:center;">${c}</td>`).join('')}</tr>`).join('') : '<tr><td colspan="5" style="border:1px solid #cbd5e1;padding:12px;text-align:center;">No attendance records</td></tr>'}</tbody>
+            </table>
+            <div style="margin-top:18px;padding:14px;background:#ecfdf5;border:1px solid #10b981;border-radius:7px;font-size:18px;font-weight:700;text-align:right;">Total Salary: RM ${data.calculatedSalary.toFixed(2)}</div>
+        `;
+        document.body.appendChild(exportBox);
+        try {
+            const canvas = await html2canvas(exportBox, {scale: 2, backgroundColor:'#ffffff', useCORS:true});
+            const link = document.createElement('a');
+            link.download = getExportFileName(data, 'jpg');
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        } catch(e) {
+            console.error(e);
+            alert('Could not create JPG file.');
+        } finally {
+            exportBox.remove();
+        }
+    }
+
+    function downloadAttendancePDF() {
+        const data = getAttendanceExportData();
+        if(!data) return;
+        if(!window.jspdf || !window.jspdf.jsPDF) {
+            alert('PDF export library is not loaded. Please check your internet connection and try again.');
+            return;
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+        const p = data.user.profile || {};
+        doc.setFontSize(18);
+        doc.text('Attendance Records (Selected Month Entry)', 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Employee: ${p.name || '-'}    ${data.cycleText}`, 14, 22);
+        doc.text(`Duty: ${data.dutyDays} days | Sunday: ${data.sundayDays} days | Holiday: ${data.holidayDays} days | OT: ${data.totalOT.toFixed(1)} hours`, 14, 28);
+
+        if(typeof doc.autoTable === 'function') {
+            doc.autoTable({
+                startY: 34,
+                head: [['Date','Day','In-Out','OT','Type']],
+                body: data.rows.length ? data.rows : [['-','-','-','-','No attendance records']],
+                theme: 'grid',
+                styles: {fontSize:9, cellPadding:3, halign:'center'},
+                headStyles: {fontStyle:'bold'}
+            });
+        }
+        const y = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : 42) + 8;
+        doc.setFontSize(13);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Total Salary: RM ${data.calculatedSalary.toFixed(2)}`, 14, y);
+        doc.setFont(undefined, 'normal');
+        doc.save(getExportFileName(data, 'pdf'));
     }
 
     function renderAttendanceSummary() {
