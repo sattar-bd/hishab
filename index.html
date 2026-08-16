@@ -174,6 +174,22 @@
             #attendance-records-card .table-action-btn { font-size: 14px; padding: 2px 2px; }
         }
 
+
+        /* Admin Visual Analytics */
+        .admin-analytics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px; }
+        .analytics-card { border-radius:9px; padding:11px 8px; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,.08); }
+        .analytics-card .label { font-size:9px; opacity:.9; font-weight:600; display:block; margin-bottom:3px; }
+        .analytics-card .value { font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .analytics-panel { background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px; }
+        .analytics-chart-wrap { position:relative; height:260px; }
+        .notification-item { padding:8px; border-bottom:1px dashed #e2e8f0; font-size:11px; }
+        .notification-item:last-child { border-bottom:none; }
+        .notification-warning { border-left:3px solid #f59e0b; }
+        .notification-success { border-left:3px solid #10b981; }
+        body.dark-mode .analytics-panel { background:#1e293b; border-color:#334155; }
+        body.dark-mode .notification-item { border-color:#334155; }
+        @media(max-width:600px){ .admin-analytics-grid{grid-template-columns:1fr 1fr 1fr;} .analytics-card .value{font-size:12px;} .analytics-chart-wrap{height:220px;} }
+
         .navbar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 6px 0; z-index: 1000; }
         .nav-item { text-align: center; color: #64748b; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; }
         .nav-item i { font-size: 15px; display: block; margin-bottom: 2px; }
@@ -230,6 +246,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -758,6 +775,11 @@
             </div>
 
             <div class="form-group">
+                <label>Due Date (Optional)</label>
+                <input type="date" id="lb-due-date" class="form-control">
+            </div>
+
+            <div class="form-group">
                 <label data-i18n="note_description">Note / Description (Optional)</label>
                 <input type="text" id="lb-note" class="form-control" placeholder="e.g.: As a loan">
             </div>
@@ -891,6 +913,34 @@
     <!-- 5. Admin Page -->
     <div id="page-admin" class="content-page">
         <div id="admin-content">
+            <!-- Visual Analytics Dashboard -->
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-chart-column"></i> Admin Dashboard Analytics</span><span style="font-size:9px;color:#64748b;">All Employees</span></div>
+                <div class="admin-analytics-grid">
+                    <div class="analytics-card" style="background:linear-gradient(135deg,#059669,#047857);"><span class="label">Total Employees</span><span class="value" id="dash-employee-count">0</span></div>
+                    <div class="analytics-card" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);"><span class="label">Expected Salary</span><span class="value">RM <span id="dash-current-salary">0.00</span></span></div>
+                    <div class="analytics-card" style="background:linear-gradient(135deg,#d97706,#b45309);"><span class="label">Pending Loan</span><span class="value">RM <span id="dash-pending-loan">0.00</span></span></div>
+                </div>
+                <div class="form-group" style="margin-bottom:6px;">
+                    <label>Analytics Year</label>
+                    <input type="number" id="analytics-year" class="form-control" min="2000" max="2100" onchange="renderAdminAnalytics()">
+                </div>
+                <div class="analytics-chart-wrap"><canvas id="salary-analytics-chart"></canvas></div>
+                <div style="font-size:9px;color:#64748b;text-align:center;margin-top:5px;">Monthly Salary + Bonus + Remittance (RM)</div>
+            </div>
+
+            <!-- Automatic Alerts -->
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-bell"></i> Automatic Notifications & Alerts</span><button class="btn btn-sm btn-outline" onclick="requestBrowserNotificationPermission()">Enable Alerts</button></div>
+                <div id="admin-notification-list"><div style="font-size:11px;color:#64748b;text-align:center;padding:8px;">Checking reminders...</div></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-paper-plane"></i> Salary Slip Receipt</span></div>
+                <div style="font-size:10px;color:#64748b;margin-bottom:7px;">When a salary/bonus month is finalized, use the employee contact buttons. True unattended WhatsApp/Email delivery requires a secure server/API configuration.</div>
+                <div style="overflow-x:auto;"><table><thead><tr><th>Employee</th><th>Month</th><th>Salary</th><th>WhatsApp</th><th>Email</th></tr></thead><tbody id="admin-receipt-list"></tbody></table></div>
+            </div>
+
             <div class="card">
                 <div class="card-title">
                     <span><i class="fa-solid fa-users-gear"></i> <span data-i18n="user_role_mgmt">User & Role Management</span></span>
@@ -1387,6 +1437,7 @@
             document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
             document.getElementById('bonus-month').value = new Date().toISOString().slice(0, 7);
             document.getElementById('summary-filter-month').value = new Date().toISOString().slice(0, 7);
+            const ay = document.getElementById('analytics-year'); if(ay) ay.value = new Date().getFullYear();
 
             document.getElementById('page-login').classList.add('hidden');
             loadAppUI();
@@ -1641,6 +1692,7 @@
         if(pageId === 'admin') {
             renderAdminUserList();
             renderAdminHelpList();
+            renderAdminAnalytics();
         }
         if(pageId === 'profile') {
             renderHelpRequestsList();
@@ -2007,6 +2059,7 @@
         const type = document.getElementById('lb-type').value;
         const amount = parseFloat(document.getElementById('lb-amount').value) || 0;
         const note = document.getElementById('lb-note').value.trim();
+        const dueDate = document.getElementById('lb-due-date').value || '';
 
         if(!date || !name || amount <= 0) {
             alert("Please enter date, name, and correct amount!");
@@ -2016,9 +2069,9 @@
         if(!user.lendBorrows) user.lendBorrows = [];
 
         if (editId) {
-            user.lendBorrows = user.lendBorrows.map(item => item.id == editId ? { id: Number(editId), date, name, type, amount, note } : item);
+            user.lendBorrows = user.lendBorrows.map(item => item.id == editId ? { id: Number(editId), date, name, type, amount, note, dueDate } : item);
         } else {
-            user.lendBorrows.push({ id: Date.now(), date, name, type, amount, note });
+            user.lendBorrows.push({ id: Date.now(), date, name, type, amount, note, dueDate });
         }
 
         await saveActiveUserToFirebase();
@@ -2039,6 +2092,7 @@
         document.getElementById('lb-type').value = item.type;
         document.getElementById('lb-amount').value = item.amount;
         document.getElementById('lb-note').value = item.note || '';
+        document.getElementById('lb-due-date').value = item.dueDate || '';
 
         document.getElementById('lb-form-title').innerHTML = '<i class="fa-solid fa-handshake-angle"></i> Edit Lend & Borrow';
         document.getElementById('lb-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
@@ -2055,6 +2109,7 @@
         document.getElementById('lb-name').value = '';
         document.getElementById('lb-amount').value = '';
         document.getElementById('lb-note').value = '';
+        const due = document.getElementById('lb-due-date'); if(due) due.value = '';
     }
 
     async function deleteLendBorrow(id) {
@@ -2235,6 +2290,7 @@
         renderRemittances();
         renderLendBorrows();
         renderHelpRequestsList();
+        if(isAdmin() && document.getElementById('page-admin')?.classList.contains('active')) renderAdminAnalytics();
     }
 
     function getAttendanceExportData() {
@@ -2720,6 +2776,101 @@
             saveActiveUserToFirebase();
             renderAttendanceSummary();
         }
+    }
+
+    let salaryAnalyticsChart = null;
+
+    function getCycleMonthSalary(user, month) {
+        if (!user) return { salary: 0, bonus: 0, remittance: 0 };
+        const attendances = user.attendances || [];
+        const settings = user.settings || {basic:1700,days:26,hours:8,otMult:1.5};
+        const dailyRate = Number(settings.basic || 0) / (Number(settings.days) || 1);
+        const hourlyRate = dailyRate / (Number(settings.hours) || 1);
+        const otRate = hourlyRate * (Number(settings.otMult) || 1.5);
+        let salary = 0;
+        attendances.forEach(item => {
+            if (!isDateInCycle(item.date, month)) return;
+            if(item.type === 'Regular' || item.type === 'Saturday') salary += dailyRate;
+            else if(item.type === 'Sunday') salary += dailyRate * 2;
+            else if(item.type === 'Holiday') salary += dailyRate * 3;
+            salary += (Number(item.ot) || 0) * otRate;
+        });
+        const bonus = ((user.bonuses || []).find(b => b.month === month) || {}).amount || 0;
+        let remittance = 0;
+        (user.remittances || []).forEach(r => {
+            if (isDateInCycle(r.date, month)) {
+                let amount = Number(r.amount) || 0;
+                if (amount < 100 && Number(r.rate) > 100) amount = Number(r.rate);
+                remittance += amount;
+            }
+        });
+        return { salary: salary + Number(bonus), bonus: Number(bonus), remittance };
+    }
+
+    function renderAdminAnalytics() {
+        if(!isAdmin()) return;
+        const year = Number(document.getElementById('analytics-year').value) || new Date().getFullYear();
+        const users = appData.users || [];
+        document.getElementById('dash-employee-count').innerText = users.length;
+        let currentSalary = 0, pendingLoan = 0;
+        users.forEach(u => {
+            const nowMonth = new Date().toISOString().slice(0,7);
+            currentSalary += getCycleMonthSalary(u, nowMonth).salary;
+            (u.lendBorrows || []).forEach(x => { if(x.type === 'given') pendingLoan += Number(x.amount) || 0; });
+        });
+        document.getElementById('dash-current-salary').innerText = currentSalary.toFixed(2);
+        document.getElementById('dash-pending-loan').innerText = pendingLoan.toFixed(2);
+
+        const labels = Array.from({length:12},(_,i)=>`${year}-${String(i+1).padStart(2,'0')}`);
+        const salary = labels.map(m => users.reduce((sum,u)=>sum+getCycleMonthSalary(u,m).salary,0));
+        const bonus = labels.map(m => users.reduce((sum,u)=>sum+getCycleMonthSalary(u,m).bonus,0));
+        const remittance = labels.map(m => users.reduce((sum,u)=>sum+getCycleMonthSalary(u,m).remittance,0));
+        const ctx = document.getElementById('salary-analytics-chart');
+        if(!ctx || typeof Chart === 'undefined') return;
+        if(salaryAnalyticsChart) salaryAnalyticsChart.destroy();
+        salaryAnalyticsChart = new Chart(ctx, { type:'bar', data:{labels:labels.map(x=>x.slice(5)),datasets:[
+            {label:'Salary',data:salary}, {label:'Bonus',data:bonus}, {label:'Remittance',data:remittance}
+        ]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+Number(v).toLocaleString()}}}} });
+        renderAdminNotifications();
+        renderAdminReceiptList();
+    }
+
+    function requestBrowserNotificationPermission(){
+        if(!('Notification' in window)) return alert('Browser notifications are not supported on this device.');
+        Notification.requestPermission().then(p=>{ if(p==='granted') renderAdminNotifications(); });
+    }
+
+    function notifyAdmin(title, body){
+        if('Notification' in window && Notification.permission === 'granted') new Notification(title,{body});
+    }
+
+    function renderAdminNotifications(){
+        const box=document.getElementById('admin-notification-list'); if(!box) return;
+        const today=getTodayLocalDateString(); const alerts=[];
+        (appData.users||[]).forEach(u=>{
+            (u.lendBorrows||[]).forEach(x=>{
+                if(x.dueDate && x.dueDate <= today){ alerts.push({kind:'warning',text:`${u.profile?.name||'Employee'} — ${x.name}: RM ${(Number(x.amount)||0).toFixed(2)} is due (${x.dueDate}).`}); }
+            });
+        });
+        if(!alerts.length){ box.innerHTML='<div style="font-size:11px;color:#64748b;text-align:center;padding:8px;">No overdue loan reminders.</div>'; return; }
+        box.innerHTML=alerts.map(a=>`<div class="notification-item notification-${a.kind}"><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i> ${a.text}</div>`).join('');
+        if(alerts.length) notifyAdmin('Loan Reminder', alerts[0].text);
+    }
+
+    function buildSalarySlipText(user, month){
+        const x=getCycleMonthSalary(user,month);
+        return `Salary Slip - ${month}%0AEmployee: ${user.profile?.name||''}%0ASalary incl. bonus: RM ${x.salary.toFixed(2)}%0ABonus: RM ${x.bonus.toFixed(2)}%0ARemittance: RM ${x.remittance.toFixed(2)}`;
+    }
+    function renderAdminReceiptList(){
+        const tbody=document.getElementById('admin-receipt-list'); if(!tbody) return;
+        const month=new Date().toISOString().slice(0,7); tbody.innerHTML='';
+        (appData.users||[]).forEach(u=>{
+            const p=u.profile||{}, x=getCycleMonthSalary(u,month); if(x.salary<=0 && x.bonus<=0) return;
+            const phone=String(p.phone||'').replace(/\D/g,''); const email=p.email||'';
+            const text=buildSalarySlipText(u,month);
+            tbody.innerHTML += `<tr><td><b>${p.name||'-'}</b></td><td>${month}</td><td>RM ${x.salary.toFixed(2)}</td><td>${phone?`<a class="btn btn-sm btn-success" target="_blank" href="https://wa.me/${phone}?text=${text}"><i class="fa-brands fa-whatsapp"></i></a>`:'-'}</td><td>${email?`<a class="btn btn-sm btn-outline" href="mailto:${email}?subject=Salary Slip ${month}&body=${text.replace(/%0A/g,'%0D%0A')}"><i class="fa-solid fa-envelope"></i></a>`:'-'}</td></tr>`;
+        });
+        if(!tbody.innerHTML) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#64748b">No finalized salary records for current month.</td></tr>';
     }
 
     function renderAdminUserList() {
