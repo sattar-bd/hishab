@@ -256,15 +256,6 @@
         .lb-detail-box b{font-size:12px}
         @media(max-width:480px){.lb-detail-summary{grid-template-columns:1fr 1fr 1fr}.lb-detail-box{padding:6px 3px}}
 
-
-        /* Offline Mode */
-        #offline-status {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 5000;
-            display: none; padding: 6px 10px; background: #b45309; color: #fff;
-            text-align: center; font-size: 11px; font-weight: 700;
-            box-shadow: 0 2px 8px rgba(0,0,0,.18);
-        }
-        #offline-status.online { background: #059669; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -272,7 +263,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div id="offline-status" aria-live="polite"><i class="fa-solid fa-wifi"></i> <span id="offline-status-text">Offline mode</span></div>
 
 <div id="loading-overlay">
     <div class="spinner"></div>
@@ -1421,166 +1411,94 @@
     async function initAppAfterAuth(uid) {
         try {
             document.getElementById('loading-overlay').style.display = 'flex';
+            
             const firebaseUser = window.firebaseAuthUser;
-            const isTargetAdmin = (firebaseUser.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
-            let usersSnapshot = null;
-            let loadedFromCache = false;
+            const isTargetAdmin = (firebaseUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
-            try {
-                usersSnapshot = await window.fsMethods.getDocs(
-                    window.fsMethods.collection(window.db, "users")
-                );
-            } catch (e) {
-                console.warn("Firestore unavailable; using offline cache.", e);
-            }
-
+            const usersSnapshot = await window.fsMethods.getDocs(window.fsMethods.collection(window.db, "users"));
             appData.users = [];
-
-            if (usersSnapshot) {
-                usersSnapshot.forEach(docSnap => {
-                    let uData = docSnap.data();
-                    if(!uData.role) uData.role = "User";
-                    if(!uData.settings) {
-                        uData.settings = { basic:1700, days:26, hours:8, otMult:1.5, darkMode:false, lang:'en' };
-                    }
-                    if(!uData.helps) uData.helps = [];
-                    if(uData.profile && uData.profile.email &&
-                       uData.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                        uData.role = "Admin";
-                    }
-                    appData.users.push(uData);
-                });
-            }
-
-            const cached = getOfflineUserCache();
-            if (cached && cached.users && cached.users.length) {
-                const cachedUser = cached.users.find(u => String(u.id) === String(uid));
-                const fsUser = appData.users.find(u => String(u.id) === String(uid));
-                if (!fsUser && cachedUser) {
-                    appData.users = cached.users;
-                    loadedFromCache = true;
-                } else if (cachedUser && fsUser &&
-                           Number(cached.updatedAt || 0) > Number(fsUser.__localUpdatedAt || 0)) {
-                    appData.users = cached.users;
-                    loadedFromCache = true;
+            
+            usersSnapshot.forEach(docSnap => {
+                let uData = docSnap.data();
+                if(!uData.role) {
+                    uData.role = "User";
                 }
-            }
+                if(!uData.settings) {
+                    uData.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' };
+                }
+                if(!uData.helps) {
+                    uData.helps = [];
+                }
+                if(uData.profile && uData.profile.email && uData.profile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    uData.role = "Admin";
+                }
+                appData.users.push(uData);
+            });
 
-            let currentUserDoc = appData.users.find(u => String(u.id) === String(uid));
-
+            let currentUserDoc = appData.users.find(u => u.id === uid);
             if (!currentUserDoc) {
                 currentUserDoc = {
                     id: uid,
                     role: (isTargetAdmin || appData.users.length === 0) ? "Admin" : "User",
                     profile: {
-                        name: firebaseUser.displayName || (firebaseUser.email || '').split('@')[0],
-                        email: firebaseUser.email || '',
+                        name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+                        email: firebaseUser.email,
                         designation: isTargetAdmin ? "System Administrator" : "General User",
                         empId: "EMP-" + Math.floor(10000 + Math.random() * 90000),
                         company: "Malaysia Construction Ltd.",
                         phone: "+60 12-345 6789",
-                        passport: "", bankName: "", bankAcc: "",
+                        passport: "",
+                        bankName: "",
+                        bankAcc: "",
                         avatar: "https://cdn-icons-png.flaticon.com/510/3135/3135715.png"
                     },
-                    settings:{basic:1700,days:26,hours:8,otMult:1.5,darkMode:false,lang:'en'},
-                    attendances:[], remittances:[], receivedSalaries:[], bonuses:[], lendBorrows:[], helps:[]
+                    settings: { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' },
+                    attendances: [],
+                    remittances: [],
+                    receivedSalaries: [],
+                    bonuses: [],
+                    lendBorrows: [],
+                    helps: []
                 };
-                if(isTargetAdmin) currentUserDoc.role = "Admin";
+                if(isTargetAdmin) {
+                    currentUserDoc.role = "Admin";
+                }
+                await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), currentUserDoc);
                 appData.users.push(currentUserDoc);
-                await saveActiveUserToFirebase();
             } else if (isTargetAdmin && currentUserDoc.role !== "Admin") {
                 currentUserDoc.role = "Admin";
-                await saveActiveUserToFirebase();
+                await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), currentUserDoc);
             }
 
             activeUserId = uid;
-            saveOfflineUserCache();
-
             document.getElementById('loading-overlay').style.display = 'none';
+
             document.getElementById('att-date').value = getTodayLocalDateString();
             onDateChange();
             document.getElementById('rem-date').value = getTodayLocalDateString();
             document.getElementById('lb-date').value = getTodayLocalDateString();
-            document.getElementById('recv-month').value = new Date().toISOString().slice(0,7);
-            document.getElementById('bonus-month').value = new Date().toISOString().slice(0,7);
-            document.getElementById('summary-filter-month').value = new Date().toISOString().slice(0,7);
-            const ay=document.getElementById('analytics-year'); if(ay) ay.value=new Date().getFullYear();
+            document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('bonus-month').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('summary-filter-month').value = new Date().toISOString().slice(0, 7);
+            const ay = document.getElementById('analytics-year'); if(ay) ay.value = new Date().getFullYear();
 
             document.getElementById('page-login').classList.add('hidden');
             loadAppUI();
 
-            if (loadedFromCache) showOfflineStatus(false, "Offline data loaded • changes will sync automatically");
         } catch (error) {
             console.error("Firebase Load Error:", error);
-            const cached=getOfflineUserCache();
-            const cachedUser=cached && cached.users ? cached.users.find(u=>String(u.id)===String(uid)) : null;
-            if(cachedUser){
-                appData.users=cached.users; activeUserId=uid;
-                document.getElementById('loading-overlay').style.display='none';
-                document.getElementById('page-login').classList.add('hidden');
-                loadAppUI();
-                showOfflineStatus(false, "Offline data loaded • changes will sync automatically");
-            } else {
-                document.getElementById('loading-overlay').style.display='none';
-                document.getElementById('page-login').classList.remove('hidden');
-            }
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('page-login').classList.add('hidden');
         }
     }
-
-    function getOfflineCacheKey() {
-        const uid=(window.firebaseAuthUser && window.firebaseAuthUser.uid)||activeUserId||'unknown';
-        return 'hishab_offline_cache_v1_'+String(uid);
-    }
-
-    function saveOfflineUserCache() {
-        try {
-            if(!getActiveUser()) return;
-            localStorage.setItem(getOfflineCacheKey(), JSON.stringify({
-                version:1, updatedAt:Date.now(), users:appData.users
-            }));
-        } catch(e) { console.warn("Offline cache save failed:",e); }
-    }
-
-    function getOfflineUserCache() {
-        try {
-            const raw=localStorage.getItem(getOfflineCacheKey());
-            return raw ? JSON.parse(raw) : null;
-        } catch(e) { return null; }
-    }
-
-    function showOfflineStatus(isOnline, customText) {
-        const el=document.getElementById('offline-status');
-        const txt=document.getElementById('offline-status-text');
-        if(!el||!txt) return;
-        if(isOnline){
-            el.classList.add('online'); el.style.display='block';
-            txt.textContent=customText||'Online • syncing data...';
-            setTimeout(()=>el.style.display='none',2500);
-        }else{
-            el.classList.remove('online'); el.style.display='block';
-            txt.textContent=customText||'Offline mode • changes are saved on this device';
-        }
-    }
-
-    window.addEventListener('online',()=>{
-        showOfflineStatus(true,'Internet restored • syncing data...');
-        setTimeout(()=>{ saveOfflineUserCache(); renderAll(); },1500);
-    });
-    window.addEventListener('offline',()=>showOfflineStatus(false));
-    if(!navigator.onLine) setTimeout(()=>showOfflineStatus(false),100);
 
     async function saveActiveUserToFirebase() {
-        const user=getActiveUser();
+        const user = getActiveUser();
         if(!user) return;
-        user.__localUpdatedAt=Date.now();
-        saveOfflineUserCache();
         try {
-            await window.fsMethods.setDoc(
-                window.fsMethods.doc(window.db,"users",String(user.id)), user
-            );
-            saveOfflineUserCache();
-        } catch(e) {
-            console.warn("Firebase unavailable; change kept in offline cache.",e);
+            await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(user.id)), user);
+        } catch (e) {
+            console.error("Firebase Save Error (Offline Mode):", e);
         }
     }
 
@@ -3275,12 +3193,6 @@
             alert("Failed to delete user!");
         }
     }
-</script>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'})
-    .catch(e=>console.warn('Offline service worker registration failed:',e)));
-}
 </script>
 </body>
 </html>
