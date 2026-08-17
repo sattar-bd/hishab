@@ -34,11 +34,15 @@
         body.dark-mode .rate-preview-box { background: #0f172a !important; border-color: #334155 !important; }
 
         .app-container { max-width: 100%; width: 100%; margin: 0; padding: 0; background: #fff; min-height: 100vh; position: relative; box-shadow: none; transition: background 0.3s, color 0.3s; }
-        .header { background: #1e293b; color: #fff; padding: 12px 15px; text-align: center; font-size: 18px; font-weight: bold; }
         .user-switcher-bar { background: #0f172a; color: #fff; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
 
         .content-page { display: none; padding: 8px; }
         .content-page.active { display: block; }
+        /* Viewport-fit: no artificial blank page scroll; long content still scrolls naturally. */
+        html, body { width:100%; min-height:100%; }
+        body { padding-bottom:0 !important; overflow-x:hidden; }
+        .app-container { min-height:100vh; min-height:100dvh; }
+        .content-page { min-height:calc(100dvh - 52px); padding-bottom:60px; }
 
         /* Login & Register Page Styles */
         #page-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
@@ -378,6 +382,8 @@
         .inline-edit-btn { background: none; border: none; color: #2563eb; cursor: pointer; font-size: 12px; padding: 2px 4px; }
         .inline-edit-btn:hover { color: #1d4ed8; }
 
+        #user-help-list th:last-child, #user-help-list td:last-child { width:58px; white-space:nowrap; }
+        #user-help-list .table-action-btn { padding:3px 5px; font-size:14px; }
         .hidden { display: none !important; }
 
         .error-msg { color: #ef4444; font-size: 12px; font-weight: bold; margin-top: 8px; display: none; }
@@ -419,7 +425,6 @@
 @media (max-width: 600px) {
     body { padding-bottom: 54px !important; overflow-x: hidden; }
     .app-container { min-height: 100dvh; }
-    .header { padding: 8px 10px !important; font-size: 17px !important; line-height: 1.2; }
     .user-switcher-bar { padding: 6px 9px !important; font-size: 11px !important; min-height: 34px; }
     .user-switcher-bar button { padding: 3px 8px !important; font-size: 10px !important; }
     .content-page { padding: 5px !important; }
@@ -508,7 +513,6 @@
 }
 
 @media (max-width: 380px) {
-    .header { font-size: 16px !important; }
     .monthly-salary-hero .value { font-size: clamp(25px, 8.6vw, 32px) !important; }
     .monthly-salary-hero .salary-hero-icon { width: 46px !important; height: 46px !important; min-width: 46px !important; font-size: 19px !important; }
     .top-summary-btns.premium-financial-summary .compact-finance-card { height: 45px !important; min-height: 45px !important; }
@@ -1056,7 +1060,6 @@
 </div>
 
 <div class="app-container">
-    <div class="header" data-i18n="app_title">Payroll & Attendance App</div>
     
     <div id="managing-banner" class="managing-banner hidden">
         <span><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="managing_data">You are currently managing data for</span> <span id="managing-target-name" style="text-decoration: underline;"></span></span>
@@ -1437,7 +1440,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>ব্যক্তির নাম *</label>
-                        <input type="text" id="personal-new-name" class="form-control" placeholder="যেমন: আতান" autocomplete="off">
+                        <input type="text" id="personal-new-name" class="form-control" placeholder="নাম" autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label>মোবাইল নম্বর</label>
@@ -1634,6 +1637,7 @@
                                 <th data-i18n="date">Date</th>
                                 <th data-i18n="subject">Subject</th>
                                 <th data-i18n="status">Status</th>
+                                <th data-i18n="action">Action</th>
                             </tr>
                         </thead>
                         <tbody id="user-help-list"></tbody>
@@ -1883,7 +1887,6 @@
             email_address: "Email Address",
             password: "Password",
             forgot_pass: "Forgot Password?",
-            app_title: "Payroll & Attendance App",
             logged_in: "Logged in:",
             logout: "Logout",
             managing_data: "You are currently managing data for",
@@ -2025,7 +2028,6 @@
             email_address: "ইমেইল এড্রেস",
             password: "পাসওয়ার্ড",
             forgot_pass: "পাসওয়ার্ড ভুলে গেছেন?",
-            app_title: "পেরোল ও হাজিরা অ্যাপ",
             logged_in: "লগইন আছেন:",
             logout: "লগআউট",
             managing_data: "আপনি বর্তমানে যার ডেটা পরিচালনা করছেন:",
@@ -3256,9 +3258,21 @@
                     <td>${formatDateToDDMMYY(h.date)}</td>
                     <td><b>${h.subject}</b><br><small style="color:#64748b;">${h.message}</small></td>
                     <td>${statusBadge}</td>
+                    <td><button class="table-action-btn delete" onclick="deleteMyHelpRequest(${h.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button></td>
                 </tr>
             `;
         });
+    }
+
+    async function deleteMyHelpRequest(helpId) {
+        const user = getActiveUser();
+        if(!user || !user.helps) return;
+        const helpItem = user.helps.find(h => h.id === helpId);
+        if(!helpItem) return;
+        if(!confirm("আপনি কি এই Help Request টি ডিলিট করতে চান?")) return;
+        user.helps = user.helps.filter(h => h.id !== helpId);
+        await saveActiveUserToFirebase();
+        renderHelpRequestsList();
     }
 
     function renderAdminHelpList() {
@@ -3329,6 +3343,10 @@
         renderLendBorrows();
         renderHelpRequestsList();
         if(isAdmin() && document.getElementById('page-admin')?.classList.contains('active')) renderAdminAnalytics();
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     }
 
     function getAttendanceExportData() {
@@ -3474,38 +3492,50 @@
         }
     }
 
-    function downloadAttendancePDF() {
+    async function downloadAttendancePDF() {
         const data = getAttendanceExportData();
         if(!data) return;
-        if(!window.jspdf || !window.jspdf.jsPDF) {
+        if(typeof html2canvas === 'undefined' || !window.jspdf || !window.jspdf.jsPDF) {
             alert('PDF export library is not loaded. Please check your internet connection and try again.');
             return;
         }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
         const p = data.user.profile || {};
-        doc.setFontSize(18);
-        doc.text('Attendance Records (Selected Month Entry)', 14, 15);
-        doc.setFontSize(10);
-        doc.text(`Employee: ${p.name || '-'}    ${data.cycleText}`, 14, 22);
-        doc.text(`Duty: ${data.dutyDays} days | Sunday: ${data.sundayDays} days | Holiday: ${data.holidayDays} days | OT: ${data.totalOT.toFixed(1)} hours`, 14, 28);
-
-        if(typeof doc.autoTable === 'function') {
-            doc.autoTable({
-                startY: 34,
-                head: [['Date','Day','In-Out','OT','Type']],
-                body: data.rows.length ? data.rows : [['-','-','-','-','No attendance records']],
-                theme: 'grid',
-                styles: {fontSize:9, cellPadding:3, halign:'center'},
-                headStyles: {fontStyle:'bold'}
-            });
-        }
-        const y = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : 42) + 8;
-        doc.setFontSize(13);
-        doc.setFont(undefined, 'bold');
-        doc.text(`Total Salary: RM ${data.calculatedSalary.toFixed(2)}`, 14, y);
-        doc.setFont(undefined, 'normal');
-        doc.save(getExportFileName(data, 'pdf'));
+        const exportBox = document.createElement('div');
+        exportBox.style.cssText = `position:fixed;left:-100000px;top:0;width:1100px;background:#fff;color:#111827;padding:35px;box-sizing:border-box;font-family:"Noto Sans Bengali","Nirmala UI","Segoe UI",Arial,sans-serif;`;
+        exportBox.innerHTML = `
+            <div style="font-size:26px;font-weight:800;margin-bottom:12px;">হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)</div>
+            <div style="font-size:16px;margin-bottom:7px;">কর্মচারী: ${escapeHtml(p.name || '-')} &nbsp;&nbsp; ${escapeHtml(data.cycleText || '')}</div>
+            <div style="font-size:15px;margin-bottom:18px;">ডিউটি: ${data.dutyDays} দিন &nbsp;|&nbsp; রবিবার: ${data.sundayDays} দিন &nbsp;|&nbsp; ছুটি: ${data.holidayDays} দিন &nbsp;|&nbsp; ওটি: ${data.totalOT.toFixed(1)} ঘণ্টা</div>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                <thead><tr>
+                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">তারিখ</th>
+                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">বার</th>
+                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">ইন-আউট</th>
+                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">ওটি</th>
+                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">ধরণ</th>
+                </tr></thead>
+                <tbody>${(data.rows.length ? data.rows : [['-','-','-','-','কোনো হাজিরা রেকর্ড নেই']]).map(row=>`<tr>${row.map(cell=>`<td style="border:1px solid #cbd5e1;padding:7px;text-align:center;">${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
+            </table>
+            <div style="font-size:19px;font-weight:800;margin-top:18px;">মোট বেতন: RM ${data.calculatedSalary.toFixed(2)}</div>`;
+        document.body.appendChild(exportBox);
+        try {
+            await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+            const canvas=await html2canvas(exportBox,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:1100});
+            const {jsPDF}=window.jspdf; const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+            const pageW=297,pageH=210,margin=8,usableW=pageW-margin*2,usableH=pageH-margin*2;
+            const pxPerMm=canvas.width/usableW, slicePx=Math.floor(usableH*pxPerMm);
+            let offset=0,page=0;
+            while(offset<canvas.height){
+                if(page++) doc.addPage();
+                const h=Math.min(slicePx,canvas.height-offset), slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=h;
+                const ctx=slice.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,slice.width,slice.height);
+                ctx.drawImage(canvas,0,offset,canvas.width,h,0,0,canvas.width,h);
+                doc.addImage(slice.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,usableW,h/pxPerMm,undefined,'FAST');
+                offset+=h;
+            }
+            doc.save(getExportFileName(data,'pdf'));
+        } catch(err) { console.error('Attendance PDF export failed:',err); alert('PDF তৈরি করা যায়নি। আবার চেষ্টা করুন।'); }
+        finally { exportBox.remove(); }
     }
 
     function renderAttendanceSummary() {
