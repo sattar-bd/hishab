@@ -1637,6 +1637,7 @@
                                 <th data-i18n="date">Date</th>
                                 <th data-i18n="subject">Subject</th>
                                 <th data-i18n="status">Status</th>
+                                <th>Admin Note</th>
                                 <th data-i18n="action">Action</th>
                             </tr>
                         </thead>
@@ -3240,6 +3241,16 @@
         alert("Help request sent successfully!");
     }
 
+    function getHelpStatusBadge(status) {
+        const s = status || 'Pending';
+        const cfg = {
+            Pending: ['Pending', '#f59e0b', '#fff7ed'],
+            Processing: ['Processing', '#2563eb', '#eff6ff'],
+            Resolved: ['Resolved', '#10b981', '#ecfdf5']
+        }[s] || ['Pending', '#f59e0b', '#fff7ed'];
+        return `<span style="display:inline-block;padding:3px 8px;border-radius:999px;background:${cfg[2]};color:${cfg[1]};font-weight:800;font-size:10px;">${cfg[0]}</span>`;
+    }
+
     function renderHelpRequestsList() {
         const user = getActiveUser();
         if(!user) return;
@@ -3252,12 +3263,12 @@
         user.helps.sort((a,b) => b.id - a.id);
 
         user.helps.forEach(h => {
-            const statusBadge = h.status === 'Resolved' ? '<span style="color:#10b981; font-weight:bold;">Resolved</span>' : '<span style="color:#f59e0b; font-weight:bold;">Pending</span>';
+            const note = h.adminNote ? `<div style="margin-top:4px;padding:5px 7px;background:#f8fafc;border-left:3px solid #2563eb;border-radius:5px;font-size:10px;color:#475569;"><b>Admin Note:</b> ${escapeHtml(h.adminNote)}</div>` : '';
             tbody.innerHTML += `
                 <tr>
                     <td>${formatDateToDDMMYY(h.date)}</td>
-                    <td><b>${h.subject}</b><br><small style="color:#64748b;">${h.message}</small></td>
-                    <td>${statusBadge}</td>
+                    <td><b>${escapeHtml(h.subject)}</b><br><small style="color:#64748b;">${escapeHtml(h.message)}</small>${note}</td>
+                    <td>${getHelpStatusBadge(h.status)}</td>
                     <td><button class="table-action-btn delete" onclick="deleteMyHelpRequest(${h.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button></td>
                 </tr>
             `;
@@ -3293,19 +3304,29 @@
         allHelps.sort((a,b) => b.id - a.id);
 
         if(allHelps.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">No help requests found</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b;">No help requests found</td></tr>`;
             return;
         }
 
         allHelps.forEach(h => {
-            const statusColor = h.status === 'Resolved' ? 'color:#10b981;' : 'color:#f59e0b;';
+            const status = h.status || 'Pending';
+            const note = h.adminNote || '';
             tbody.innerHTML += `
                 <tr>
-                    <td><b>${h.userName}</b></td>
-                    <td><b>${h.subject}</b><br><small style="color:#64748b;">${h.message}</small></td>
-                    <td style="${statusColor} font-weight:bold;">${h.status}</td>
+                    <td><b>${escapeHtml(h.userName)}</b></td>
+                    <td><b>${escapeHtml(h.subject)}</b><br><small style="color:#64748b;">${escapeHtml(h.message)}</small></td>
                     <td>
-                        <button class="btn btn-sm btn-success" onclick="toggleHelpStatus('${h.userId}', ${h.id})" title="Toggle Status"><i class="fa-solid fa-rotate"></i></button>
+                        <select id="help-status-${h.userId}-${h.id}" class="form-control" style="min-width:105px;padding:5px;font-size:10px;">
+                            <option value="Pending" ${status==='Pending'?'selected':''}>Pending</option>
+                            <option value="Processing" ${status==='Processing'?'selected':''}>Processing</option>
+                            <option value="Resolved" ${status==='Resolved'?'selected':''}>Resolved</option>
+                        </select>
+                    </td>
+                    <td>
+                        <textarea id="help-note-${h.userId}-${h.id}" class="form-control" rows="2" placeholder="Write note..." style="min-width:130px;padding:5px;font-size:10px;">${escapeHtml(note)}</textarea>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="saveHelpStatusAndNote('${h.userId}', ${h.id})" title="Save Status & Note"><i class="fa-solid fa-floppy-disk"></i></button>
                         <button class="table-action-btn delete" onclick="deleteHelpRequest('${h.userId}', ${h.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
@@ -3313,16 +3334,32 @@
         });
     }
 
+    async function saveHelpStatusAndNote(userId, helpId) {
+        const targetUser = appData.users.find(u => u.id === userId);
+        if(!targetUser || !targetUser.helps) return;
+        const helpItem = targetUser.helps.find(h => h.id === helpId);
+        if(!helpItem) return;
+
+        const statusEl = document.getElementById(`help-status-${userId}-${helpId}`);
+        const noteEl = document.getElementById(`help-note-${userId}-${helpId}`);
+        helpItem.status = statusEl ? statusEl.value : (helpItem.status || 'Pending');
+        helpItem.adminNote = noteEl ? noteEl.value.trim() : (helpItem.adminNote || '');
+        helpItem.updatedAt = Date.now();
+
+        await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(userId)), targetUser);
+        renderAdminHelpList();
+        if(getActiveUser() && String(getActiveUser().id) === String(userId)) renderHelpRequestsList();
+    }
+
+    // Kept for backward compatibility with any existing buttons/bookmarks.
     async function toggleHelpStatus(userId, helpId) {
         const targetUser = appData.users.find(u => u.id === userId);
         if(!targetUser || !targetUser.helps) return;
-
         const helpItem = targetUser.helps.find(h => h.id === helpId);
-        if(helpItem) {
-            helpItem.status = helpItem.status === 'Resolved' ? 'Pending' : 'Resolved';
-            await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(userId)), targetUser);
-            renderAdminHelpList();
-        }
+        if(!helpItem) return;
+        helpItem.status = helpItem.status === 'Pending' ? 'Processing' : (helpItem.status === 'Processing' ? 'Resolved' : 'Pending');
+        await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(userId)), targetUser);
+        renderAdminHelpList();
     }
 
     async function deleteHelpRequest(userId, helpId) {
