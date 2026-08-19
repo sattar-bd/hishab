@@ -1342,6 +1342,7 @@ table tr {
             </div>
 
             <button class="btn" id="att-save-btn" onclick="saveAttendance()"><i class="fa-solid fa-check"></i> <span data-i18n="save_attendance">Save Attendance</span></button>
+            <button class="btn btn-danger" id="att-delete-btn" onclick="deleteEditingAttendance()" style="display:none; margin-top:6px;"><i class="fa-solid fa-trash-can"></i> Delete Attendance</button>
             <button class="btn btn-danger" id="att-cancel-btn" onclick="cancelAttendanceEdit()" style="display:none; margin-top:6px;" data-i18n="cancel">Cancel</button>
         </div>
     </div>
@@ -2913,6 +2914,7 @@ table tr {
 
         document.getElementById('att-form-title').innerText = "Edit Attendance";
         document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
+        document.getElementById('att-delete-btn').style.display = 'block';
         document.getElementById('att-cancel-btn').style.display = 'block';
         
         switchPage('entry', document.getElementById('nav-entry'));
@@ -2922,6 +2924,7 @@ table tr {
         document.getElementById('att-edit-id').value = '';
         document.getElementById('att-form-title').innerText = "Daily Attendance & Entry";
         document.getElementById('att-save-btn').innerHTML = '<i class="fa-solid fa-check"></i> Save Attendance';
+        document.getElementById('att-delete-btn').style.display = 'none';
         document.getElementById('att-cancel-btn').style.display = 'none';
         document.getElementById('att-date').value = getTodayLocalDateString();
         onDateChange();
@@ -2929,10 +2932,20 @@ table tr {
 
     async function deleteAttendance(id) {
         const user = getActiveUser();
+        if(!user) return;
         if(!confirm("Are you sure you want to delete this attendance record?")) return;
         user.attendances = user.attendances.filter(a => a.id !== id);
         await saveActiveUserToFirebase();
+        cancelAttendanceEdit();
         renderAll();
+        alert("Attendance record deleted successfully!");
+    }
+
+    // Delete button shown only while editing an attendance record.
+    async function deleteEditingAttendance() {
+        const editId = document.getElementById('att-edit-id').value;
+        if(!editId) return;
+        await deleteAttendance(Number(editId));
     }
 
     async function saveReceivedSalary() {
