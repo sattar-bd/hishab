@@ -1005,11 +1005,204 @@
 .profile-session-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px;padding:9px 11px;border:1px solid rgba(148,163,184,.22);border-radius:12px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;box-shadow:0 6px 18px rgba(15,23,42,.12)}
 .profile-session-user{display:flex;align-items:center;gap:8px;min-width:0}.profile-session-user>i{font-size:20px;color:#6ee7b7}.profile-session-user span{display:flex;flex-direction:column;line-height:1.1;min-width:0}.profile-session-user small{font-size:9px;opacity:.72}.profile-session-user b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}.profile-session-logout{border:0;border-radius:8px;background:#ef4444;color:#fff;padding:7px 10px;font-size:10px;font-weight:700;cursor:pointer}.profile-account-card{display:flex;align-items:center;gap:10px;padding:12px;margin-bottom:8px;border:1px solid #e2e8f0;border-radius:14px;background:linear-gradient(135deg,#fff,#f8fafc);box-shadow:0 5px 15px rgba(15,23,42,.06)}.profile-account-icon{width:38px;height:38px;flex:0 0 38px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#059669,#047857);color:#fff;font-size:16px}.profile-account-copy{flex:1;min-width:0}.profile-account-title{font-size:13px;font-weight:800;color:#0f172a}.profile-account-sub{margin-top:2px;font-size:9px;color:#64748b}.profile-account-btn{width:30px;height:30px;border:0;border-radius:9px;background:#ecfdf5;color:#047857;cursor:pointer}.logout-card .logout-icon{background:linear-gradient(135deg,#ef4444,#b91c1c)}.logout-card .profile-account-btn{background:#fef2f2;color:#dc2626}.profile-modal{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;padding:12px}.profile-modal.hidden{display:none}.profile-modal-panel{width:min(100%,520px);max-height:88vh;overflow:auto;border-radius:18px 18px 12px 12px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.28);animation:profileModalUp .2s ease}.profile-modal-head{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 15px;background:linear-gradient(135deg,#064e3b,#059669);color:#fff}.profile-modal-title{font-size:14px;font-weight:800}.profile-modal-sub{font-size:9px;opacity:.78;margin-top:2px}.profile-modal-close{width:30px;height:30px;border:0;border-radius:9px;background:rgba(255,255,255,.16);color:#fff;cursor:pointer}.profile-modal-body{padding:8px 12px 12px}.profile-modal-body .info-item{padding:10px 2px;border-bottom:1px solid #eef2f7}.profile-modal-body .info-value{max-width:58%;word-break:break-word}@keyframes profileModalUp{from{transform:translateY(18px);opacity:.4}to{transform:translateY(0);opacity:1}}body.dark-mode .profile-account-card,body.dark-mode .profile-modal-panel{background:#1e293b;border-color:#334155}body.dark-mode .profile-account-title{color:#f8fafc}body.dark-mode .profile-modal-body .info-item{border-color:#334155}
 @media(max-width:480px){.profile-session-bar{padding:8px 9px}.profile-session-user b{max-width:145px}.profile-account-card{padding:10px}.profile-account-icon{width:34px;height:34px;flex-basis:34px}.profile-modal{padding:0;align-items:flex-end}.profile-modal-panel{max-height:90vh;border-radius:18px 18px 0 0}.profile-modal-body{padding:6px 10px 12px}.profile-modal-body .info-item{min-height:42px}.navbar{height:56px !important;min-height:56px !important;padding:3px 0 2px !important}.navbar .nav-item{font-size:9px !important}.navbar .nav-item i{font-size:17px !important;margin-bottom:2px !important}}
+
+        /* ===== Payment / Collection Reminder Feature ===== */
+        .reminder-page-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+        .reminder-page-head h3{font-size:15px;color:#0f172a}.reminder-page-head p{font-size:9px;color:#64748b;margin-top:2px}
+        body.dark-mode .reminder-page-head h3{color:#f8fafc}.reminder-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+        .reminder-stat{padding:10px;border-radius:11px;color:#fff;box-shadow:0 5px 14px rgba(15,23,42,.10)}
+        .reminder-stat.pay{background:linear-gradient(135deg,#991b1b,#ef4444)}.reminder-stat.receive{background:linear-gradient(135deg,#047857,#10b981)}
+        .reminder-stat span{display:block;font-size:9px;opacity:.9}.reminder-stat b{display:block;font-size:16px;margin-top:3px}
+        .reminder-item{border:1px solid #e2e8f0;border-radius:11px;padding:9px 10px;margin-bottom:6px;background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+        body.dark-mode .reminder-item{background:#1e293b;border-color:#334155}.reminder-item-top{display:flex;align-items:center;justify-content:space-between;gap:7px}
+        .reminder-person{font-size:12px;font-weight:800;color:#0f172a}.reminder-item small{font-size:9px;color:#64748b}.reminder-amount{font-size:13px;font-weight:900;white-space:nowrap}.reminder-pay{color:#dc2626}.reminder-receive{color:#059669}
+        .reminder-badge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:8px;font-weight:800}.reminder-badge.pay{background:#fee2e2;color:#b91c1c}.reminder-badge.receive{background:#d1fae5;color:#047857}
+        .reminder-empty{text-align:center;padding:18px;color:#64748b;font-size:11px;border:1px dashed #cbd5e1;border-radius:10px}
 </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<style id="compact-ui-overrides">
+/* Extra compact buttons and table rows */
+button, .btn, .admin-launcher, input[type="button"], input[type="submit"] {
+    min-height: 26px !important;
+}
+.btn {
+    padding: 3px 6px !important;
+    font-size: 9.5px !important;
+    line-height: 1.05 !important;
+    border-radius: 4px !important;
+}
+.btn-sm {
+    min-height: 23px !important;
+    padding: 2px 5px !important;
+    font-size: 9px !important;
+}
+.admin-launcher {
+    padding: 5px 7px !important;
+}
+.nav-item {
+    min-height: 0 !important;
+}
+table {
+    border-spacing: 0 !important;
+}
+table th, table td {
+    padding: 3px 2px !important;
+    height: 24px !important;
+    line-height: 1.05 !important;
+    font-size: 9px !important;
+}
+table tr {
+    height: 24px !important;
+}
+.table-action-btn {
+    min-width: 24px !important;
+    min-height: 23px !important;
+    padding: 2px 4px !important;
+}
+</style>
+
+<style id="home-compact-override">
+#page-entry{padding-top:4px!important;padding-bottom:4px!important}
+#page-entry .card,#page-entry .summary-card,#page-entry .premium-card,#page-entry .top-summary-btns>*,#page-entry .section-card{margin-bottom:4px!important}
+#page-entry .card-title{padding:5px 7px!important;min-height:28px!important}
+#page-entry .card-body,#page-entry .card-content{padding:5px 7px!important}
+#page-entry .btn{min-height:26px!important;padding:3px 7px!important;line-height:1.1!important;font-size:9px!important}
+#page-entry .btn-sm{min-height:22px!important;padding:2px 5px!important;font-size:8px!important}
+#page-entry table th,#page-entry table td{padding:3px 4px!important;line-height:1.1!important;font-size:9px!important}
+#page-entry input,#page-entry select,#page-entry textarea{min-height:27px!important;padding:3px 6px!important;font-size:9px!important}
+#page-entry .form-group,#page-entry .field,#page-entry .input-group{margin-bottom:4px!important}
+#page-entry h1,#page-entry h2,#page-entry h3,#page-entry h4,#page-entry p{margin-top:2px!important;margin-bottom:2px!important}
+#page-entry .top-summary-btns{gap:4px!important;margin-bottom:4px!important}
+@media(max-width:480px){#page-entry .card-title{padding:4px 6px!important}#page-entry .card-body,#page-entry .card-content{padding:4px 6px!important}#page-entry .btn{min-height:24px!important;padding:2px 6px!important;font-size:8px!important}#page-entry table th,#page-entry table td{padding:2px 3px!important;font-size:8px!important}}
+</style>
+
+<style id="mobile-home-extra-compact">
+/* Mobile-first Home/Entry spacing only */
+#page-entry{
+  padding:2px !important;
+  margin:0 !important;
+}
+#page-entry .top-summary-btns{
+  gap:3px !important;
+  margin:0 0 3px !important;
+}
+#page-entry .top-summary-btns > *{
+  margin:0 !important;
+  padding:4px 5px !important;
+}
+#page-entry .card,
+#page-entry .summary-card,
+#page-entry .premium-card,
+#page-entry .section-card{
+  margin:0 0 3px !important;
+  padding:0 !important;
+}
+#page-entry .card-title{
+  padding:4px 6px !important;
+  min-height:26px !important;
+}
+#page-entry .card-body,
+#page-entry .card-content{
+  padding:4px 6px !important;
+}
+#page-entry .btn{
+  min-height:25px !important;
+  padding:2px 6px !important;
+  line-height:1.05 !important;
+  font-size:9px !important;
+}
+#page-entry .btn-sm{
+  min-height:22px !important;
+  padding:2px 5px !important;
+  font-size:8px !important;
+}
+#page-entry table th,
+#page-entry table td{
+  padding:2px 3px !important;
+  line-height:1.1 !important;
+  font-size:9px !important;
+}
+#page-entry input,
+#page-entry select{
+  min-height:25px !important;
+  height:25px !important;
+  padding:2px 5px !important;
+  font-size:9px !important;
+}
+#page-entry textarea{
+  padding:3px 5px !important;
+  font-size:9px !important;
+}
+#page-entry .form-group,
+#page-entry .field,
+#page-entry .input-group{
+  margin-bottom:3px !important;
+}
+#page-entry h1,#page-entry h2,#page-entry h3,#page-entry h4,
+#page-entry p{
+  margin-top:2px !important;
+  margin-bottom:2px !important;
+}
+@media(max-width:480px){
+  #page-entry{
+    padding:1px !important;
+  }
+  #page-entry .card-title{
+    padding:3px 5px !important;
+  }
+  #page-entry .card-body,
+  #page-entry .card-content{
+    padding:3px 5px !important;
+  }
+  #page-entry table th,
+  #page-entry table td{
+    padding:2px !important;
+    font-size:8.5px !important;
+  }
+  #page-entry .btn{
+    min-height:24px !important;
+    padding:2px 5px !important;
+  }
+}
+</style>
+
+
+<style id="attendance-records-readability">
+/* Attendance Records: one Edit action + slightly larger readable text */
+#page-summary #attendance-records,
+#page-summary [id*="attendance-record"],
+#page-summary table {
+  font-size: 11px !important;
+}
+#page-summary table th,
+#page-summary table td {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  padding: 4px 5px !important;
+}
+#page-summary table .btn,
+#page-summary table .btn-sm {
+  font-size: 10px !important;
+  min-height: 26px !important;
+  padding: 3px 7px !important;
+}
+@media(max-width:480px){
+  #page-summary table th,
+  #page-summary table td {
+    font-size: 10.5px !important;
+    padding: 4px !important;
+  }
+  #page-summary table .btn,
+  #page-summary table .btn-sm {
+    font-size: 10px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -1825,10 +2018,48 @@
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
+
+    <!-- 6. Payment / Collection Reminders -->
+    <div id="page-reminder" class="content-page">
+        <div class="reminder-page-head">
+            <div><h3><i class="fa-solid fa-bell" style="color:#f59e0b"></i> টাকা রিমাইন্ডার</h3><p>কাকে টাকা দিবেন বা কার কাছ থেকে টাকা আনবেন—তারিখ অনুযায়ী মনে করিয়ে দেবে।</p></div>
+            <button class="btn btn-sm" onclick="openReminderModal()"><i class="fa-solid fa-plus"></i> নতুন</button>
+        </div>
+        <div class="reminder-stat-grid">
+            <div class="reminder-stat pay"><span>দিতে হবে</span><b id="reminder-total-pay">RM 0.00</b></div>
+            <div class="reminder-stat receive"><span>আনতে হবে</span><b id="reminder-total-receive">RM 0.00</b></div>
+        </div>
+        <div class="card" style="padding:9px;margin-bottom:7px;">
+            <div class="card-title"><span><i class="fa-solid fa-calendar-days"></i> আসন্ন রিমাইন্ডার</span><button class="btn btn-sm btn-outline" onclick="requestReminderNotificationPermission()"><i class="fa-solid fa-bell"></i> নোটিফিকেশন</button></div>
+            <div id="reminder-list"></div>
+        </div>
+    </div>
+
+    <div id="reminder-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeReminderModal()">
+        <div class="modal-content">
+            <div class="card-title"><span><i class="fa-solid fa-bell"></i> টাকা রিমাইন্ডার সেট করুন</span><button class="admin-modal-close" style="background:#e2e8f0;color:#334155" onclick="closeReminderModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <input type="hidden" id="reminder-edit-id">
+            <div class="form-group"><label>রিমাইন্ডারের ধরন</label><select id="reminder-type" class="form-control"><option value="pay">আমি টাকা দিবো</option><option value="receive">আমি টাকা আনবো</option></select></div>
+            <div class="form-group"><label>ব্যক্তির নাম</label><input id="reminder-person" class="form-control" placeholder="যেমন: Rahim"></div>
+            <div class="grid-2">
+                <div class="form-group"><label>মাস</label><input id="reminder-month" type="month" class="form-control"></div>
+                <div class="form-group"><label>তারিখ</label><input id="reminder-date" type="number" min="1" max="31" class="form-control" placeholder="যেমন: 25"></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>টাকার পরিমাণ (RM)</label><input id="reminder-amount" type="number" min="0" step="0.01" class="form-control" placeholder="0.00"></div>
+                <div class="form-group"><label>সময়</label><input id="reminder-time" type="time" class="form-control" value="09:00"></div>
+            </div>
+            <div class="form-group"><label>কত আগে মনে করাবে?</label><select id="reminder-before" class="form-control"><option value="0">তারিখে</option><option value="1">১ দিন আগে</option><option value="3">৩ দিন আগে</option><option value="7">৭ দিন আগে</option></select></div>
+            <div class="form-group"><label>নোট (ঐচ্ছিক)</label><input id="reminder-note" class="form-control" placeholder="যেমন: Salary / ধার / ভাড়া"></div>
+            <button class="btn btn-success" onclick="saveMoneyReminder()"><i class="fa-solid fa-check"></i> রিমাইন্ডার সংরক্ষণ</button>
+        </div>
+    </div>
+
     <div class="navbar">
         <div class="nav-item active" id="nav-entry" onclick="switchPage('entry', this)"><i class="fa-solid fa-calendar-plus"></i><span data-i18n="nav_entry">Entry</span></div>
         <div class="nav-item" id="nav-summary" onclick="switchPage('summary', this)"><i class="fa-solid fa-chart-pie"></i><span data-i18n="nav_summary">Summary</span></div>
         <div class="nav-item" id="nav-remittance" onclick="switchPage('remittance', this)"><i class="fa-solid fa-money-bill-transfer"></i><span data-i18n="nav_remittance">Remittance</span></div>
+        <div class="nav-item" id="nav-reminder" onclick="switchPage('reminder', this)"><i class="fa-solid fa-bell"></i><span>Reminder</span></div>
         <div class="nav-item" id="nav-profile" onclick="switchPage('profile', this)"><i class="fa-solid fa-user"></i><span data-i18n="nav_profile">Profile</span></div>
         <div class="nav-item hidden" id="nav-admin" onclick="switchPage('admin', this)"><i class="fa-solid fa-user-shield"></i><span data-i18n="nav_admin">Admin</span></div>
     </div>
@@ -2199,6 +2430,9 @@
                 if(!uData.settings) {
                     uData.settings = { basic: 1700, days: 26, hours: 8, otMult: 1.5, darkMode: false, lang: 'en' };
                 }
+                if(!uData.reminders) {
+                    uData.reminders = [];
+                }
                 if(!uData.helps) {
                     uData.helps = [];
                 }
@@ -2231,6 +2465,7 @@
                     receivedSalaries: [],
                     bonuses: [],
                     lendBorrows: [],
+                    reminders: [],
                     helps: []
                 };
                 if(isTargetAdmin) {
@@ -2425,6 +2660,7 @@
                     receivedSalaries: [],
                     bonuses: [],
                     lendBorrows: [],
+                    reminders: [],
                     helps: []
                 };
                 await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", uid), newUser);
@@ -2512,6 +2748,10 @@
         }
         if(pageId === 'profile') {
             renderHelpRequestsList();
+        }
+        if(pageId === 'reminder') {
+            renderMoneyReminders();
+            checkMoneyReminders();
         }
         renderAll();
     }
@@ -3372,12 +3612,131 @@
         renderAdminHelpList();
     }
 
+
+    // ===== Payment / Collection Reminder Feature =====
+    function openReminderModal(editId = '') {
+        const user = getActiveUser(); if(!user) return;
+        document.getElementById('reminder-edit-id').value = editId || '';
+        if(editId) {
+            const r = (user.reminders || []).find(x => String(x.id) === String(editId));
+            if(!r) return;
+            document.getElementById('reminder-type').value = r.type || 'pay';
+            document.getElementById('reminder-person').value = r.person || '';
+            document.getElementById('reminder-month').value = r.month || '';
+            document.getElementById('reminder-date').value = r.day || '';
+            document.getElementById('reminder-amount').value = r.amount || '';
+            document.getElementById('reminder-time').value = r.time || '09:00';
+            document.getElementById('reminder-before').value = String(r.beforeDays ?? 0);
+            document.getElementById('reminder-note').value = r.note || '';
+        } else {
+            document.getElementById('reminder-type').value = 'pay';
+            document.getElementById('reminder-person').value = '';
+            document.getElementById('reminder-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('reminder-date').value = new Date().getDate();
+            document.getElementById('reminder-amount').value = '';
+            document.getElementById('reminder-time').value = '09:00';
+            document.getElementById('reminder-before').value = '0';
+            document.getElementById('reminder-note').value = '';
+        }
+        document.getElementById('reminder-modal').classList.remove('hidden');
+    }
+
+    function closeReminderModal() { document.getElementById('reminder-modal')?.classList.add('hidden'); }
+
+    function reminderDueDate(r) {
+        if(!r || !r.month || !r.day) return '';
+        const base = new Date(`${r.month}-${String(r.day).padStart(2,'0')}T${r.time || '09:00'}:00`);
+        if(Number.isNaN(base.getTime())) return '';
+        base.setDate(base.getDate() - Number(r.beforeDays || 0));
+        return `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(base.getDate()).padStart(2,'0')}`;
+    }
+
+    function reminderPaymentDate(r) { return `${r.month}-${String(r.day).padStart(2,'0')}`; }
+
+    async function saveMoneyReminder() {
+        const user = getActiveUser(); if(!user) return;
+        const type = document.getElementById('reminder-type').value;
+        const person = document.getElementById('reminder-person').value.trim();
+        const month = document.getElementById('reminder-month').value;
+        const day = Number(document.getElementById('reminder-date').value);
+        const amount = Number(document.getElementById('reminder-amount').value);
+        const time = document.getElementById('reminder-time').value || '09:00';
+        const beforeDays = Number(document.getElementById('reminder-before').value || 0);
+        const note = document.getElementById('reminder-note').value.trim();
+        if(!person || !month || !day || day < 1 || day > 31 || amount <= 0) { alert('নাম, মাস, তারিখ এবং সঠিক টাকার পরিমাণ দিন।'); return; }
+        const testDate = new Date(`${month}-${String(day).padStart(2,'0')}T12:00:00`);
+        if(Number.isNaN(testDate.getTime()) || testDate.getMonth()+1 !== Number(month.slice(5))) { alert('এই মাসে এই তারিখটি নেই।'); return; }
+        if(!user.reminders) user.reminders = [];
+        const id = document.getElementById('reminder-edit-id').value;
+        const item = { id: id ? Number(id) : Date.now(), type, person, month, day, amount, time, beforeDays, note, completed:false, createdAt: Date.now() };
+        if(id) user.reminders = user.reminders.map(x => String(x.id) === String(id) ? {...x, ...item} : x);
+        else user.reminders.push(item);
+        await saveActiveUserToFirebase();
+        closeReminderModal(); renderMoneyReminders(); checkMoneyReminders();
+        alert('রিমাইন্ডার সংরক্ষণ হয়েছে।');
+    }
+
+    async function deleteMoneyReminder(id) {
+        const user = getActiveUser(); if(!user || !confirm('এই রিমাইন্ডারটি মুছে ফেলবেন?')) return;
+        user.reminders = (user.reminders || []).filter(x => String(x.id) !== String(id));
+        await saveActiveUserToFirebase(); renderMoneyReminders();
+    }
+
+    async function toggleMoneyReminder(id) {
+        const user = getActiveUser(); if(!user) return;
+        const r = (user.reminders || []).find(x => String(x.id) === String(id)); if(!r) return;
+        r.completed = !r.completed;
+        await saveActiveUserToFirebase(); renderMoneyReminders();
+    }
+
+    function renderMoneyReminders() {
+        const user = getActiveUser(); if(!user) return;
+        if(!user.reminders) user.reminders = [];
+        const pay = user.reminders.filter(x=>x.type==='pay' && !x.completed).reduce((s,x)=>s+Number(x.amount||0),0);
+        const receive = user.reminders.filter(x=>x.type==='receive' && !x.completed).reduce((s,x)=>s+Number(x.amount||0),0);
+        const payEl=document.getElementById('reminder-total-pay'), recEl=document.getElementById('reminder-total-receive');
+        if(payEl) payEl.innerText=`RM ${pay.toFixed(2)}`; if(recEl) recEl.innerText=`RM ${receive.toFixed(2)}`;
+        const box=document.getElementById('reminder-list'); if(!box) return;
+        const today=getTodayLocalDateString();
+        const arr=user.reminders.slice().sort((a,b)=>reminderPaymentDate(a).localeCompare(reminderPaymentDate(b)));
+        if(!arr.length){ box.innerHTML='<div class="reminder-empty">কোনো রিমাইন্ডার সেট করা নেই।<br>উপরে <b>নতুন</b> চাপ দিয়ে যোগ করুন।</div>'; return; }
+        box.innerHTML=arr.map(r=>{
+            const paymentDate=reminderPaymentDate(r), due=reminderDueDate(r), overdue=!r.completed && paymentDate<today;
+            const cls=r.type==='pay'?'pay':'receive', label=r.type==='pay'?'দিতে হবে':'আনতে হবে';
+            return `<div class="reminder-item" style="opacity:${r.completed?.58:1}">
+                <div class="reminder-item-top"><div><span class="reminder-badge ${cls}">${label}</span> <span class="reminder-person">${escapeHtml(r.person)}</span></div><span class="reminder-amount reminder-${cls}">RM ${Number(r.amount||0).toFixed(2)}</span></div>
+                <div style="margin-top:5px;display:flex;justify-content:space-between;gap:5px;align-items:center"><small><i class="fa-solid fa-calendar"></i> ${formatDateToDDMMYY(paymentDate)} • ${r.time||'09:00'} ${r.beforeDays?`• ${r.beforeDays} দিন আগে নোটিফিকেশন`:''}</small><small style="color:${overdue?'#dc2626':'#64748b'};font-weight:${overdue?800:500}">${r.completed?'সম্পন্ন':overdue?'তারিখ পার হয়েছে':'আসন্ন'}</small></div>
+                ${r.note?`<small style="display:block;margin-top:4px">নোট: ${escapeHtml(r.note)}</small>`:''}
+                <div style="margin-top:6px;text-align:right"><button class="table-action-btn edit" onclick="openReminderModal('${r.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="table-action-btn" style="color:#059669" onclick="toggleMoneyReminder('${r.id}')" title="Complete"><i class="fa-solid fa-check"></i></button><button class="table-action-btn delete" onclick="deleteMoneyReminder('${r.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button></div>
+            </div>`;
+        }).join('');
+    }
+
+    function requestReminderNotificationPermission() {
+        if(!('Notification' in window)){ alert('এই ব্রাউজারে নোটিফিকেশন সাপোর্ট নেই।'); return; }
+        Notification.requestPermission().then(p=>{ if(p==='granted'){ alert('নোটিফিকেশন চালু হয়েছে।'); checkMoneyReminders(); } else alert('নোটিফিকেশন অনুমতি দেওয়া হয়নি।'); });
+    }
+
+    function checkMoneyReminders() {
+        const user=getActiveUser(); if(!user) return;
+        const today=getTodayLocalDateString();
+        (user.reminders||[]).filter(r=>!r.completed && reminderDueDate(r)===today).forEach(r=>{
+            const key=`moneyReminderNotified_${user.id}_${r.id}_${today}`;
+            if(localStorage.getItem(key)) return;
+            const text=`${r.type==='pay'?'টাকা দিতে হবে':'টাকা আনতে হবে'}: ${r.person}, RM ${Number(r.amount||0).toFixed(2)} — ${formatDateToDDMMYY(reminderPaymentDate(r))}`;
+            if('Notification' in window && Notification.permission==='granted') new Notification('টাকা রিমাইন্ডার',{body:text});
+            else if(reminderPaymentDate(r)===today) console.log(text);
+            localStorage.setItem(key,'1');
+        });
+    }
+
     function renderAll() {
         renderAttendanceSummary();
         renderReceivedSalaries();
         renderBonuses();
         renderRemittances();
         renderLendBorrows();
+        renderMoneyReminders();
         renderHelpRequestsList();
         if(isAdmin() && document.getElementById('page-admin')?.classList.contains('active')) renderAdminAnalytics();
     }
@@ -3618,10 +3977,7 @@
                         <td>${item.inTime}-${item.outTime}</td>
                         <td>${item.ot}h</td>
                         <td>${item.type}</td>
-                        <td>
-                            <button class="table-action-btn edit" onclick="editAttendance(${item.id})" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="table-action-btn delete" onclick="deleteAttendance(${item.id})" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
+                        <td><button class="btn btn-sm" onclick="editAttendance(${item.id})"><i class="fa-solid fa-pen-to-square"></i> Edit</button></td>
                     </tr>
                 `;
 
