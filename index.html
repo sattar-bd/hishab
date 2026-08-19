@@ -89,7 +89,9 @@
         .attendance-modal-panel{width:min(100%,900px);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.28)}
         .attendance-modal-head{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:13px 15px;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff}.attendance-modal-head b{font-size:13px}.attendance-modal-close{width:30px;height:30px;border:0;border-radius:9px;background:rgba(255,255,255,.16);color:#fff;cursor:pointer}.attendance-modal-body{padding:8px}
         body.dark-mode .admin-launcher,body.dark-mode .attendance-last-entry-card{background:#1e293b;border-color:#334155} body.dark-mode .admin-launcher b,body.dark-mode .attendance-last-entry-copy b{color:#f8fafc} body.dark-mode .admin-modal-panel,body.dark-mode .attendance-modal-panel{background:#1e293b}
-        @media(max-width:600px){.admin-modal-launcher-grid{grid-template-columns:1fr 1fr;gap:5px}.admin-launcher{padding:7px 6px}.admin-launcher .ico{width:28px;height:28px;flex-basis:28px;font-size:11px}.admin-launcher b{font-size:9px}.admin-launcher small{display:none;font-size:7px}.admin-modal-panel,.attendance-modal-panel{max-height:94vh;border-radius:16px 16px 8px 8px}.admin-modal-body,.attendance-modal-body{padding:7px}.attendance-last-entry-card{padding:9px 10px}.attendance-last-entry-icon{width:34px;height:34px;flex-basis:34px}}
+        @media(max-width:600px){
+    #page-admin .admin-modal-launcher-grid{grid-template-columns:1fr !important;}
+.admin-modal-launcher-grid{grid-template-columns:1fr 1fr;gap:5px}.admin-launcher{padding:7px 6px}.admin-launcher .ico{width:28px;height:28px;flex-basis:28px;font-size:11px}.admin-launcher b{font-size:9px}.admin-launcher small{display:none;font-size:7px}.admin-modal-panel,.attendance-modal-panel{max-height:94vh;border-radius:16px 16px 8px 8px}.admin-modal-body,.attendance-modal-body{padding:7px}.attendance-last-entry-card{padding:9px 10px}.attendance-last-entry-icon{width:34px;height:34px;flex-basis:34px}}
 
         /* Modal or Popup Styles */
         .modal-overlay {
@@ -337,7 +339,230 @@
         }
 
 
-        /* Admin Visual Analytics */
+        
+/* ===== Admin Page Polish + Total Users ===== */
+#page-admin{
+    padding:10px 8px 78px !important;
+    background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%);
+}
+#page-admin .admin-page-heading{
+    display:flex;align-items:center;gap:9px;
+    padding:12px 12px;margin-bottom:9px;border-radius:15px;
+    color:#fff;background:linear-gradient(135deg,#0f172a,#1e3a8a);
+    box-shadow:0 8px 20px rgba(15,23,42,.16);
+}
+#page-admin .admin-page-heading .heading-icon{
+    width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+    background:rgba(255,255,255,.13);font-size:18px;
+}
+#page-admin .admin-page-heading b{display:block;font-size:16px}
+#page-admin .admin-page-heading small{display:block;font-size:9px;opacity:.82;margin-top:2px}
+.admin-overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}
+.admin-overview-card{
+    min-height:82px;border:0;border-radius:15px;padding:11px;
+    color:#fff;display:flex;align-items:center;gap:10px;cursor:pointer;
+    box-shadow:0 7px 18px rgba(15,23,42,.13);transition:.18s;
+}
+.admin-overview-card:hover{transform:translateY(-2px)}
+.admin-overview-card.users{background:linear-gradient(135deg,#2563eb,#1e40af)}
+.admin-overview-card.help{background:linear-gradient(135deg,#0891b2,#0e7490)}
+.admin-overview-card .overview-icon{
+    width:43px;height:43px;border-radius:13px;display:grid;place-items:center;
+    background:rgba(255,255,255,.16);font-size:18px;flex:0 0 43px;
+}
+.admin-overview-card .overview-copy{min-width:0;flex:1}
+.admin-overview-card .overview-label{font-size:9px;font-weight:700;opacity:.88}
+.admin-overview-card .overview-value{font-size:25px;font-weight:900;line-height:1.05;margin-top:2px}
+.admin-overview-card .overview-arrow{font-size:12px;opacity:.85}
+#page-admin .admin-modal-launcher-grid{grid-template-columns:1fr 1fr;gap:8px}
+#page-admin .admin-launcher{
+    min-height:70px;padding:10px;border-radius:14px;gap:9px;
+    box-shadow:0 5px 14px rgba(15,23,42,.08);
+}
+#page-admin .admin-launcher .ico{width:38px;height:38px;flex-basis:38px;font-size:15px;border-radius:12px}
+#page-admin .admin-launcher b{font-size:11px}
+#page-admin .admin-launcher small{font-size:8px;display:block}
+#page-admin .admin-launcher .fa-chevron-right{font-size:11px !important}
+.admin-user-count-banner{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 11px;margin-bottom:9px;border-radius:13px;
+    background:#fff;border:1px solid #dbeafe;box-shadow:0 4px 12px rgba(37,99,235,.07);
+}
+.admin-user-count-banner .count-left{display:flex;align-items:center;gap:9px}
+.admin-user-count-banner .count-icon{
+    width:35px;height:35px;border-radius:10px;background:#eff6ff;color:#2563eb;
+    display:grid;place-items:center;font-size:15px
+}
+.admin-user-count-banner b{font-size:11px;color:#0f172a}
+.admin-user-count-banner small{display:block;font-size:8px;color:#64748b;margin-top:2px}
+.admin-user-count-banner .count-number{font-size:21px;font-weight:900;color:#2563eb}
+body.dark-mode #page-admin{background:#0f172a}
+body.dark-mode .admin-user-count-banner{background:#1e293b;border-color:#334155}
+body.dark-mode .admin-user-count-banner b{color:#f8fafc}
+@media(max-width:600px){
+    #page-admin{padding:8px 6px 70px !important}
+    #page-admin .admin-page-heading{padding:10px;border-radius:13px}
+    #page-admin .admin-page-heading .heading-icon{width:36px;height:36px}
+    #page-admin .admin-page-heading b{font-size:14px}
+    .admin-overview-card{min-height:76px;padding:9px}
+    .admin-overview-card .overview-icon{width:38px;height:38px;flex-basis:38px}
+    .admin-overview-card .overview-value{font-size:22px}
+    #page-admin .admin-launcher{min-height:66px;padding:8px}
+    #page-admin .admin-launcher .ico{width:34px;height:34px;flex-basis:34px;font-size:13px}
+}
+
+
+#admin-user-list-page .admin-modal-panel{max-width:620px;width:calc(100% - 18px);border-radius:18px}
+#admin-user-list-page .admin-modal-body{padding:12px}
+#admin-user-list-page table{width:100%}
+@media(max-width:600px){
+    #admin-user-list-page .admin-modal-panel{width:calc(100% - 12px);max-height:88vh}
+    #admin-user-list-page .admin-modal-body{padding:10px}
+}
+
+
+/* ===== Full Page User Management ===== */
+#page-admin-users{
+    min-height:calc(100vh - 70px);
+    padding:0 8px 80px !important;
+    background:#f8fafc;
+}
+.admin-users-fullpage{max-width:760px;margin:0 auto}
+.admin-users-topbar{
+    position:sticky;top:0;z-index:5;
+    display:flex;align-items:center;gap:10px;
+    padding:11px 4px;
+    background:#f8fafc;
+}
+.admin-users-back{
+    width:42px;height:42px;border:0;border-radius:12px;
+    background:#e2e8f0;color:#0f172a;font-size:17px;
+}
+.admin-users-title{flex:1}
+.admin-users-title b{display:block;font-size:16px;color:#0f172a}
+.admin-users-title small{display:block;font-size:9px;color:#64748b;margin-top:2px}
+.admin-users-count{
+    font-size:10px;font-weight:800;color:#2563eb;
+    background:#eff6ff;padding:6px 9px;border-radius:999px;
+}
+.admin-users-summary{
+    display:flex;align-items:center;gap:12px;
+    padding:13px;margin:2px 0 10px;border-radius:16px;
+    color:#fff;background:linear-gradient(135deg,#2563eb,#1e40af);
+    box-shadow:0 8px 18px rgba(37,99,235,.18);
+}
+.admin-users-summary-icon{
+    width:45px;height:45px;border-radius:13px;
+    background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:18px;
+}
+.admin-users-summary small{display:block;font-size:9px;font-weight:700;opacity:.85}
+.admin-users-summary b{display:block;font-size:26px;line-height:1.05}
+.admin-users-list-card{
+    background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+    overflow:hidden;box-shadow:0 5px 16px rgba(15,23,42,.07);
+}
+.admin-user-row{
+    display:flex;align-items:center;gap:10px;padding:12px;
+    border-bottom:1px solid #eef2f7;
+}
+.admin-user-row:last-child{border-bottom:0}
+.admin-user-avatar{
+    width:42px;height:42px;border-radius:13px;
+    background:#eff6ff;color:#2563eb;display:grid;place-items:center;
+    flex:0 0 42px;font-size:16px;
+}
+.admin-user-info{min-width:0;flex:1}
+.admin-user-info b{display:block;font-size:12px;color:#0f172a}
+.admin-user-info small{display:block;font-size:9px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:2px 0 5px}
+.admin-user-info .role-badge{font-size:8px;padding:3px 7px}
+.admin-user-actions{display:flex;gap:5px}
+.admin-user-actions button{
+    width:34px;height:34px;border:0;border-radius:9px;
+    background:#f1f5f9;color:#334155;font-size:13px;
+}
+.admin-user-actions button:hover{background:#dbeafe;color:#2563eb}
+.admin-user-actions button.danger{color:#dc2626;background:#fef2f2}
+@media(max-width:600px){
+    #page-admin-users{padding:0 6px 75px !important}
+    .admin-users-topbar{padding:9px 2px}
+    .admin-users-back{width:40px;height:40px}
+    .admin-user-row{padding:10px 8px}
+}
+body.dark-mode #page-admin-users{background:#0f172a}
+body.dark-mode .admin-users-topbar{background:#0f172a}
+body.dark-mode .admin-users-title b{color:#f8fafc}
+body.dark-mode .admin-users-list-card{background:#1e293b;border-color:#334155}
+body.dark-mode .admin-user-row{border-color:#334155}
+body.dark-mode .admin-user-info b{color:#f8fafc}
+body.dark-mode .admin-user-avatar{background:#172554}
+
+
+/* ===== Admin buttons open as full-screen pages ===== */
+#page-admin .admin-modal-launcher-grid .admin-launcher{
+    cursor:pointer;
+}
+#page-admin [id^="admin-modal-"]{
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100vh !important;
+    z-index:9999 !important;
+    padding:0 !important;
+    margin:0 !important;
+    background:#f8fafc !important;
+    display:none;
+    align-items:stretch !important;
+    justify-content:stretch !important;
+}
+#page-admin [id^="admin-modal-"]:not(.hidden){
+    display:flex !important;
+}
+#page-admin [id^="admin-modal-"] .admin-modal-panel{
+    width:100% !important;
+    max-width:none !important;
+    height:100% !important;
+    max-height:none !important;
+    min-height:100vh !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    display:flex !important;
+    flex-direction:column !important;
+    overflow:hidden !important;
+}
+#page-admin [id^="admin-modal-"] .admin-modal-head{
+    flex:0 0 auto !important;
+    min-height:58px !important;
+    padding:12px 14px !important;
+    border-radius:0 !important;
+}
+#page-admin [id^="admin-modal-"] .admin-modal-body{
+    flex:1 1 auto !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    padding:12px !important;
+}
+#page-admin [id^="admin-modal-"] .admin-modal-close{
+    width:40px !important;
+    height:40px !important;
+    font-size:17px !important;
+}
+#page-admin [id^="admin-modal-"] .card{
+    width:100%;
+}
+body.dark-mode #page-admin [id^="admin-modal-"]{
+    background:#0f172a !important;
+}
+@media(max-width:600px){
+    #page-admin [id^="admin-modal-"] .admin-modal-head{
+        min-height:56px !important;
+        padding:10px !important;
+    }
+    #page-admin [id^="admin-modal-"] .admin-modal-body{
+        padding:9px !important;
+    }
+}
+
+/* Admin Visual Analytics */
         .admin-analytics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px; }
         .analytics-card { border-radius:9px; padding:11px 8px; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,.08); }
         .analytics-card .label { font-size:9px; opacity:.9; font-weight:600; display:block; margin-bottom:3px; }
@@ -1886,13 +2111,57 @@ table tr {
     </div>
 
     <!-- 5. Admin Page -->
-    <div id="page-admin" class="content-page">
-        <div style="font-size:13px;font-weight:800;margin-bottom:6px;color:#0f172a;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-user-shield" style="color:#059669"></i> Admin Panel</div>
+    
+    <div id="page-admin-users" class="content-page">
+        <div class="admin-users-fullpage">
+            <div class="admin-users-topbar">
+                <button class="admin-users-back" onclick="closeAdminUserListPage()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="admin-users-title">
+                    <b>User List</b>
+                    <small>Manage all users</small>
+                </div>
+                <span id="admin-user-list-page-count" class="admin-users-count">0 users</span>
+            </div>
+
+            <div class="admin-users-summary">
+                <div class="admin-users-summary-icon"><i class="fa-solid fa-users"></i></div>
+                <div>
+                    <small>TOTAL USERS</small>
+                    <b id="admin-users-full-count">0</b>
+                </div>
+            </div>
+
+            <div class="admin-users-list-card">
+                <div id="admin-user-list-page-body" class="admin-users-list"></div>
+            </div>
+        </div>
+    </div>
+
+<div id="page-admin" class="content-page">
+        <div class="admin-page-heading">
+            <span class="heading-icon"><i class="fa-solid fa-user-shield"></i></span>
+            <div><b>Admin Panel</b><small>System overview & management</small></div>
+        </div>
+        <div class="admin-overview-grid">
+            <button class="admin-overview-card users" onclick="openAdminUserListPage()">
+                <span class="overview-icon"><i class="fa-solid fa-users"></i></span>
+                <span class="overview-copy"><span class="overview-label">TOTAL USERS</span><span id="admin-total-users" class="overview-value">0</span></span>
+                <i class="fa-solid fa-chevron-right overview-arrow"></i>
+            </button>
+            <button class="admin-overview-card help" onclick="openAdminModal('admin-modal-4')">
+                <span class="overview-icon"><i class="fa-solid fa-headset"></i></span>
+                <span class="overview-copy"><span class="overview-label">HELP REQUESTS</span><span id="admin-total-help" class="overview-value">0</span></span>
+                <i class="fa-solid fa-chevron-right overview-arrow"></i>
+            </button>
+        </div>
+        
         <div class="admin-modal-launcher-grid">
             <button class="admin-launcher" onclick="openAdminModal('admin-modal-0')"><span class="ico" style="background:linear-gradient(135deg,#059669,#059669cc);"><i class="fa-solid fa-chart-column"></i></span><span class="copy"><b>Admin Dashboard</b><small>Analytics, salary, bonus & remittance overview</small></span><i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:#64748b;"></i></button>
             <button class="admin-launcher" onclick="openAdminModal('admin-modal-1')"><span class="ico" style="background:linear-gradient(135deg,#f59e0b,#f59e0bcc);"><i class="fa-solid fa-bell"></i></span><span class="copy"><b>Notifications & Alerts</b><small>Overdue loans and automatic reminders</small></span><i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:#64748b;"></i></button>
             <button class="admin-launcher" onclick="openAdminModal('admin-modal-2')"><span class="ico" style="background:linear-gradient(135deg,#2563eb,#2563ebcc);"><i class="fa-solid fa-paper-plane"></i></span><span class="copy"><b>Salary Slip Receipt</b><small>Send salary slip by WhatsApp or email</small></span><i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:#64748b;"></i></button>
-            <button class="admin-launcher" onclick="openAdminModal('admin-modal-3')"><span class="ico" style="background:linear-gradient(135deg,#7c3aed,#7c3aedcc);"><i class="fa-solid fa-users-gear"></i></span><span class="copy"><b>User & Role Management</b><small>Manage users, roles and employee access</small></span><i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:#64748b;"></i></button>
+            
             <button class="admin-launcher" onclick="openAdminModal('admin-modal-4')"><span class="ico" style="background:linear-gradient(135deg,#0891b2,#0891b2cc);"><i class="fa-solid fa-headset"></i></span><span class="copy"><b>Help Requests</b><small>Review and resolve user support requests</small></span><i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:#64748b;"></i></button>
         </div>
         <div id="admin-modal-0" class="modal-overlay hidden" onclick="if(event.target===this) closeAdminModal('admin-modal-0')">
@@ -1941,13 +2210,16 @@ table tr {
                 </div>
             </div>
         </div>
+        
+        
+
         <div id="admin-modal-3" class="modal-overlay hidden" onclick="if(event.target===this) closeAdminModal('admin-modal-3')">
             <div class="admin-modal-panel">
                 <div class="admin-modal-head"><div><b>User & Role Management</b><small>Manage users, roles and employee access</small></div><button class="admin-modal-close" onclick="closeAdminModal('admin-modal-3')"><i class="fa-solid fa-xmark"></i></button></div>
                 <div class="admin-modal-body">
 <div class="card">
                 <div class="card-title">
-                    <span><i class="fa-solid fa-users-gear"></i> <span data-i18n="user_role_mgmt">User & Role Management</span></span>
+                    <span><i class="fa-solid fa-users-gear"></i> <span data-i18n="user_role_mgmt">User & Role Management</span> <span id="admin-user-modal-count" style="font-size:9px;background:#eff6ff;color:#2563eb;padding:3px 7px;border-radius:999px;margin-left:4px;">0 users</span></span>
                 </div>
 
                 <div id="user-edit-section" class="hidden" style="background:#f1f5f9; padding:8px; border-radius:6px; margin-bottom:10px;">
@@ -3541,6 +3813,10 @@ table tr {
 
     function renderAdminHelpList() {
         if(!isAdmin()) return;
+        let helpCount = 0;
+        (appData.users || []).forEach(u => { helpCount += (u.helps || []).length; });
+        const helpCounter = document.getElementById('admin-total-help');
+        if(helpCounter) helpCounter.innerText = helpCount;
         const tbody = document.getElementById('admin-help-list');
         if(!tbody) return;
         tbody.innerHTML = '';
@@ -4411,8 +4687,91 @@ table tr {
         if(!tbody.innerHTML) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#64748b">No finalized salary records for current month.</td></tr>';
     }
 
-    function renderAdminUserList() {
+    
+    function openAdminUserListPage(){
         if(!isAdmin()) return;
+        document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const page = document.getElementById('page-admin-users');
+        if(page) page.classList.add('active');
+        renderAdminUserListPage();
+    }
+
+    function closeAdminUserListPage(){
+        const page = document.getElementById('page-admin-users');
+        if(page) page.classList.remove('active');
+        const adminPage = document.getElementById('page-admin');
+        if(adminPage) adminPage.classList.add('active');
+        const navAdmin = document.getElementById('nav-admin');
+        if(navAdmin) navAdmin.classList.add('active');
+        renderAdminUserList();
+    }
+
+    function renderAdminUserListPage(){
+        if(!isAdmin()) return;
+        const box = document.getElementById('admin-user-list-page-body');
+        const count = document.getElementById('admin-user-list-page-count');
+        const fullCount = document.getElementById('admin-users-full-count');
+        if(!box) return;
+
+        const users = appData.users || [];
+        const label = users.length + (users.length === 1 ? ' user' : ' users');
+        if(count) count.innerText = label;
+        if(fullCount) fullCount.innerText = users.length;
+
+        box.innerHTML = '';
+        users.forEach(u => {
+            const p = u.profile || {};
+            const isMe = u.id === activeUserId;
+            box.innerHTML += `
+                <div class="admin-user-row">
+                    <div class="admin-user-avatar"><i class="fa-solid fa-user"></i></div>
+                    <div class="admin-user-info">
+                        <b>${p.name || 'No Name'}</b>
+                        <small>${p.email || '-'}</small>
+                        <span class="role-badge role-${(u.role || 'user').toLowerCase()}">${u.role || 'User'}</span>
+                    </div>
+                    <div class="admin-user-actions">
+                        <button onclick="manageUserEntries('${u.id}')" title="Manage Entries"><i class="fa-solid fa-folder-open"></i></button>
+                        <button onclick="editUserFromListPage('${u.id}')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                        ${!isMe ? `<button class="danger" onclick="deleteUserFromListPage('${u.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        if(!box.innerHTML){
+            box.innerHTML = '<div style="text-align:center;color:#64748b;padding:30px;">No users found.</div>';
+        }
+    }
+
+    function editUserFromListPage(userId){
+        editUserByAdmin(userId);
+        // Keep the user management experience inside the full User List page.
+        const section = document.getElementById('user-edit-section');
+        if(section){
+            section.classList.remove('hidden');
+            section.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+    }
+
+    async function deleteUserFromListPage(userId){
+        await deleteUserByAdmin(userId);
+        renderAdminUserListPage();
+        const total = (appData.users || []).length;
+        ['admin-total-users','admin-total-users-inline'].forEach(id=>{
+            const el=document.getElementById(id);
+            if(el) el.innerText=total;
+        });
+    }
+
+function renderAdminUserList() {
+        if(!isAdmin()) return;
+        const totalUsers = (appData.users || []).length;
+        const countEls = ['admin-total-users','admin-total-users-inline'];
+        countEls.forEach(id => { const el=document.getElementById(id); if(el) el.innerText=totalUsers; });
+        const modalCount=document.getElementById('admin-user-modal-count');
+        if(modalCount) modalCount.innerText=totalUsers + (totalUsers===1 ? ' user' : ' users');
         const tbody = document.getElementById('admin-user-list');
         tbody.innerHTML = '';
 
@@ -4462,6 +4821,7 @@ table tr {
         await window.fsMethods.setDoc(window.fsMethods.doc(window.db, "users", String(userId)), u);
         hideUserForm();
         renderAdminUserList();
+        renderAdminUserListPage();
         alert("User updated successfully!");
     }
 
@@ -4471,6 +4831,7 @@ table tr {
             await window.fsMethods.deleteDoc(window.fsMethods.doc(window.db, "users", String(userId)));
             appData.users = appData.users.filter(u => u.id !== userId);
             renderAdminUserList();
+            renderAdminUserListPage();
             alert("User deleted successfully!");
         } catch(e) {
             console.error(e);
