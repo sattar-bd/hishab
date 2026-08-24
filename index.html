@@ -1243,6 +1243,67 @@ body.dark-mode #page-admin [id^="admin-modal-"]{
         .reminder-person{font-size:12px;font-weight:800;color:#0f172a}.reminder-item small{font-size:9px;color:#64748b}.reminder-amount{font-size:13px;font-weight:900;white-space:nowrap}.reminder-pay{color:#dc2626}.reminder-receive{color:#059669}
         .reminder-badge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:8px;font-weight:800}.reminder-badge.pay{background:#fee2e2;color:#b91c1c}.reminder-badge.receive{background:#d1fae5;color:#047857}
         .reminder-empty{text-align:center;padding:18px;color:#64748b;font-size:11px;border:1px dashed #cbd5e1;border-radius:10px}
+
+        /* ===== Friends + Private Messaging Feature ===== */
+        .friends-card{margin-bottom:8px}
+        .friends-toolbar{display:flex;gap:6px;margin-bottom:7px}
+        .friends-search{flex:1;min-width:0}
+        .friends-count{display:flex;align-items:center;justify-content:center;min-width:64px;padding:0 8px;border-radius:8px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800}
+        .friends-list{display:flex;flex-direction:column;gap:6px;max-height:310px;overflow-y:auto}
+        .friend-row{display:flex;align-items:center;gap:9px;padding:8px;border:1px solid #e2e8f0;border-radius:10px;background:linear-gradient(135deg,#fff,#f8fafc);transition:.15s}
+        .friend-row:hover{border-color:#93c5fd;box-shadow:0 3px 10px rgba(37,99,235,.08)}
+        .friend-avatar{width:40px;height:40px;flex:0 0 40px;border-radius:50%;object-fit:cover;background:#eff6ff;border:1px solid #dbeafe}
+        .friend-info{min-width:0;flex:1}
+        .friend-info b{display:block;font-size:11px;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .friend-info small{display:block;font-size:8px;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .friend-message-btn{width:34px;height:34px;border:0;border-radius:9px;background:#2563eb;color:#fff;cursor:pointer;font-size:13px;flex:0 0 34px}
+        .friend-message-btn:hover{background:#1d4ed8}
+        .friends-empty{text-align:center;padding:18px 8px;color:#64748b;font-size:10px;border:1px dashed #cbd5e1;border-radius:10px}
+        .chat-modal{position:fixed;inset:0;z-index:5200;background:rgba(15,23,42,.68);display:flex;align-items:flex-end;justify-content:center;padding:0}
+        .chat-modal.hidden{display:none}
+        .chat-panel{width:min(100%,560px);height:min(82vh,680px);background:#fff;border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -10px 40px rgba(0,0,0,.28)}
+        .chat-head{display:flex;align-items:center;gap:9px;padding:11px 12px;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff}
+        .chat-head-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.75);background:#fff;flex:0 0 38px}
+        .chat-head-info{min-width:0;flex:1}
+        .chat-head-info b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .chat-head-info small{font-size:8px;opacity:.8}
+        .chat-close{width:34px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.15);color:#fff;cursor:pointer}
+        .chat-messages{flex:1 1 auto;min-height:0;overflow-y:auto;padding:10px;background:#f8fafc;display:flex;flex-direction:column;gap:6px}
+        .chat-empty{text-align:center;color:#64748b;font-size:10px;margin:auto;padding:20px}
+        .chat-bubble{max-width:82%;padding:7px 9px;border-radius:12px;font-size:11px;line-height:1.35;word-break:break-word}
+        .chat-bubble.mine{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:4px}
+        .chat-bubble.theirs{align-self:flex-start;background:#fff;color:#0f172a;border:1px solid #e2e8f0;border-bottom-left-radius:4px}
+        .chat-time{display:block;font-size:7px;opacity:.7;margin-top:3px;text-align:right}
+        .chat-compose{
+            display:flex !important; align-items:center !important; flex:0 0 auto !important;
+            gap:7px; padding:9px !important; min-height:58px !important;
+            border-top:1px solid #e2e8f0; background:#fff !important; z-index:20;
+        }
+        .chat-input{
+            display:block !important; visibility:visible !important; opacity:1 !important;
+            flex:1 1 auto !important; width:100% !important; min-width:0; resize:none;
+            min-height:40px !important; max-height:90px; padding:9px 10px !important;
+            border:1px solid #94a3b8 !important; border-radius:10px; outline:none;
+            background:#fff !important; color:#0f172a !important; font-size:12px !important;
+            box-sizing:border-box;
+        }
+        .chat-send{display:grid !important;place-items:center;flex:0 0 44px !important;width:44px !important;height:40px !important;border:0;border-radius:9px;background:#10b981;color:#fff;cursor:pointer;font-size:14px}
+        .chat-send:disabled{opacity:.55;cursor:not-allowed}
+        body.dark-mode .friends-search{background:#0f172a;color:#f8fafc;border-color:#334155}
+        body.dark-mode .friends-count{background:#172554;color:#93c5fd}
+        body.dark-mode .friend-row{background:#1e293b;border-color:#334155}
+        body.dark-mode .friend-info b{color:#f8fafc}
+        body.dark-mode .friends-empty{border-color:#475569;color:#94a3b8}
+        body.dark-mode .chat-panel{background:#1e293b}
+        body.dark-mode .chat-messages{background:#0f172a}
+        body.dark-mode .chat-bubble.theirs{background:#1e293b;color:#f8fafc;border-color:#334155}
+        body.dark-mode .chat-compose{background:#1e293b;border-color:#334155}
+        body.dark-mode .chat-input{background:#0f172a;color:#f8fafc;border-color:#334155}
+        @media(max-width:600px){
+            .friends-list{max-height:270px}
+            .chat-panel{width:100%;height:88vh;border-radius:16px 16px 0 0}
+            .chat-bubble{max-width:88%}
+        }
 </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1647,6 +1708,108 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
 })();
 </script>
 
+
+<style id="mobile-chat-final-single-fix">
+@media (max-width:600px){
+  /* Chat must cover the bottom navigation while open. */
+  #chat-modal{
+    position:fixed!important;
+    inset:0!important;
+    z-index:99999999!important;
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:center!important;
+    padding:0!important;
+    background:rgba(15,23,42,.72)!important;
+  }
+  #chat-modal.hidden{display:none!important;}
+  #chat-modal .chat-panel{
+    position:relative!important;
+    width:100%!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    border-radius:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+    background:#0f172a!important;
+  }
+  #chat-modal .chat-head{
+    flex:0 0 auto!important;
+    min-height:70px!important;
+  }
+  #chat-modal .chat-messages{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    overflow-y:auto!important;
+    padding:10px!important;
+    padding-bottom:10px!important;
+    box-sizing:border-box!important;
+  }
+  #chat-modal .chat-compose{
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    flex:0 0 64px!important;
+    width:100%!important;
+    height:64px!important;
+    min-height:64px!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:9px!important;
+    box-sizing:border-box!important;
+    background:#1e293b!important;
+    border-top:1px solid #475569!important;
+    z-index:10!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+  #chat-modal .chat-input{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    flex:1 1 auto!important;
+    width:auto!important;
+    min-width:0!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    margin:0!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+    background:#0f172a!important;
+    color:#fff!important;
+    border:1px solid #64748b!important;
+    border-radius:10px!important;
+    font-size:14px!important;
+  }
+  #chat-modal .chat-input::placeholder{color:#cbd5e1!important;opacity:1!important;}
+  #chat-modal .chat-send{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    flex:0 0 52px!important;
+    width:52px!important;
+    min-width:52px!important;
+    height:46px!important;
+    min-height:46px!important;
+    margin:0!important;
+    padding:0!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:0!important;
+    border-radius:10px!important;
+    background:#2563eb!important;
+    color:#fff!important;
+    z-index:11!important;
+  }
+  #chat-modal .chat-send i{display:block!important;visibility:visible!important;opacity:1!important;font-size:17px!important;}
+}
+</style>
 </head>
 <body>
 
@@ -2289,6 +2452,20 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
             </div>
         </div>
 
+
+        <!-- Friends & Private Messaging -->
+        <div class="card friends-card">
+            <div class="card-title">
+                <span><i class="fa-solid fa-user-group"></i> Friends & Messages</span>
+                <span id="friends-count" class="friends-count">0 users</span>
+            </div>
+            <div class="friends-toolbar">
+                <input id="friends-search" class="form-control friends-search" type="search" placeholder="Search users..." oninput="renderFriendsList(this.value)">
+                <button class="btn btn-sm btn-outline" type="button" onclick="loadFriendsList()" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div id="friends-list" class="friends-list"></div>
+        </div>
+
         <div class="profile-account-card">
             <div class="profile-account-icon"><i class="fa-solid fa-id-card"></i></div>
             <div class="profile-account-copy">
@@ -2305,6 +2482,28 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
                 <div class="profile-account-sub">Sign out from this account</div>
             </div>
             <button class="profile-account-btn logout-btn" onclick="logoutUser()"><i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+
+
+        <!-- Private Chat Modal -->
+        <div id="chat-modal" class="chat-modal hidden" onclick="if(event.target===this) closeChatModal()">
+            <div class="chat-panel">
+                <div class="chat-head">
+                    <img id="chat-head-avatar" class="chat-head-avatar" src="https://cdn-icons-png.flaticon.com/510/3135/3135715.png" alt="User">
+                    <div class="chat-head-info">
+                        <b id="chat-head-name">Chat</b>
+                        <small id="chat-head-email">Private message</small>
+                    </div>
+                    <button class="chat-close" type="button" onclick="closeChatModal()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                    <div class="chat-empty">No messages yet. Start the conversation.</div>
+                </div>
+                <div class="chat-compose">
+                    <textarea id="chat-input" class="chat-input" rows="1" placeholder="Write a message..." onkeydown="handleChatKeydown(event)"></textarea>
+                    <button id="chat-send" class="chat-send" type="button" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
         </div>
 
         <div id="user-info-modal" class="profile-modal hidden" onclick="if(event.target===this) closeUserInfoModal()">
@@ -2571,7 +2770,7 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
-    import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -2596,7 +2795,7 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
 
     window.db = db;
     window.auth = auth;
-    window.fsMethods = { collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc };
+    window.fsMethods = { collection, doc, getDocs, setDoc, updateDoc, deleteDoc, getDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp };
     window.authMethods = { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut };
     
     onAuthStateChanged(auth, async (user) => {
@@ -2911,6 +3110,9 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
     let managingUserId = null; 
     let activeUserId = null;
     let appData = { users: [] };
+    let friendChatUnsubscribe = null;
+    let currentChatUserId = null;
+    let friendsSearchTimer = null;
     let currentAuthMode = 'login';
     const ADMIN_EMAIL = "sattar124@gmail.com";
 
@@ -3173,8 +3375,43 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
                 return;
             }
         } catch (error) {
-            console.error(error);
-            errDiv.innerText = 'Account has been already opened with this email';
+            console.error('Authentication error:', error);
+
+            const code = String(error?.code || '').toLowerCase();
+            let message = 'Something went wrong. Please try again.';
+
+            if (currentAuthMode === 'login') {
+                if (code === 'auth/invalid-credential' ||
+                    code === 'auth/invalid-login-credentials' ||
+                    code === 'auth/wrong-password' ||
+                    code === 'auth/user-not-found') {
+                    message = 'Incorrect email or password.';
+                } else if (code === 'auth/invalid-email') {
+                    message = 'Please enter a valid email address.';
+                } else if (code === 'auth/too-many-requests') {
+                    message = 'Too many failed attempts. Please try again later.';
+                } else if (code === 'auth/user-disabled') {
+                    message = 'This account has been disabled.';
+                }
+            } else if (currentAuthMode === 'register') {
+                if (code === 'auth/email-already-in-use') {
+                    message = 'An account already exists with this email. Please login instead.';
+                } else if (code === 'auth/invalid-email') {
+                    message = 'Please enter a valid email address.';
+                } else if (code === 'auth/weak-password') {
+                    message = 'Password is too weak. Please use at least 6 characters.';
+                } else if (code === 'auth/operation-not-allowed') {
+                    message = 'Email/password registration is not enabled in Firebase.';
+                }
+            } else if (currentAuthMode === 'forgot') {
+                if (code === 'auth/user-not-found') {
+                    message = 'No account was found with this email.';
+                } else if (code === 'auth/invalid-email') {
+                    message = 'Please enter a valid email address.';
+                }
+            }
+
+            errDiv.innerText = message;
             errDiv.style.display = 'block';
         }
     }
@@ -3213,6 +3450,7 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
     }
 
     async function logoutUser() {
+        closeChatModal();
         await window.authMethods.signOut(window.auth);
         managingUserId = null;
         activeUserId = null;
@@ -3250,6 +3488,7 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
         }
         if(pageId === 'profile') {
             renderHelpRequestsList();
+            loadFriendsList();
         }
         if(pageId === 'reminder') {
             renderMoneyReminders();
@@ -4675,7 +4914,183 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
         const modal=document.getElementById('user-info-modal');
         if(modal){ modal.classList.add('hidden'); document.body.classList.remove('modal-open'); }
     }
-    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeUserInfoModal(); closeAttendanceRecordsModal(); document.querySelectorAll('[id^="admin-modal-"]').forEach(m=>m.classList.add('hidden')); } });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeChatModal(); closeUserInfoModal(); closeAttendanceRecordsModal(); document.querySelectorAll('[id^="admin-modal-"]').forEach(m=>m.classList.add('hidden')); } });
+
+
+    function escapeChatHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+        }[ch]));
+    }
+
+    function getMessagingUser() {
+        // Messaging always uses the real logged-in account, not an admin's managed user.
+        return getLoggedInUser();
+    }
+
+    function makeChatId(uid1, uid2) {
+        return [String(uid1), String(uid2)].sort().join('__');
+    }
+
+    function getUserAvatar(user) {
+        return (user && user.profile && user.profile.avatar) ||
+            'https://cdn-icons-png.flaticon.com/510/3135/3135715.png';
+    }
+
+    function loadFriendsList() {
+        const me = getMessagingUser();
+        const box = document.getElementById('friends-list');
+        const count = document.getElementById('friends-count');
+        if(!box || !me) return;
+
+        const search = (document.getElementById('friends-search')?.value || '').trim().toLowerCase();
+        const users = (appData.users || []).filter(u => String(u.id) !== String(me.id));
+        const filtered = users.filter(u => {
+            const p = u.profile || {};
+            const hay = `${p.name || ''} ${p.email || ''} ${p.designation || ''}`.toLowerCase();
+            return !search || hay.includes(search);
+        });
+
+        if(count) count.innerText = `${users.length} user${users.length === 1 ? '' : 's'}`;
+
+        if(!filtered.length) {
+            box.innerHTML = `<div class="friends-empty">${search ? 'No matching users found.' : 'No other users available yet.'}</div>`;
+            return;
+        }
+
+        box.innerHTML = filtered.map(u => {
+            const p = u.profile || {};
+            const name = escapeChatHtml(p.name || 'Unnamed User');
+            const email = escapeChatHtml(p.email || '');
+            const designation = escapeChatHtml(p.designation || '');
+            const avatar = escapeChatHtml(getUserAvatar(u));
+            const meta = designation ? `${designation}${email ? ' • ' : ''}${email}` : email;
+            return `
+                <div class="friend-row">
+                    <img class="friend-avatar" src="${avatar}" alt="">
+                    <div class="friend-info">
+                        <b>${name}</b>
+                        <small>${meta || 'User'}</small>
+                    </div>
+                    <button class="friend-message-btn" type="button" onclick="openChatWithUser('${escapeChatHtml(String(u.id))}')" title="Message">
+                        <i class="fa-solid fa-comment-dots"></i>
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openChatWithUser(userId) {
+        const me = getMessagingUser();
+        if(!me || String(userId) === String(me.id)) return;
+
+        const target = (appData.users || []).find(u => String(u.id) === String(userId));
+        if(!target) {
+            alert('User not found.');
+            return;
+        }
+
+        currentChatUserId = String(target.id);
+        const p = target.profile || {};
+        document.getElementById('chat-head-name').innerText = p.name || 'User';
+        document.getElementById('chat-head-email').innerText = p.email || p.designation || 'Private message';
+        document.getElementById('chat-head-avatar').src = getUserAvatar(target);
+        document.getElementById('chat-input').value = '';
+        document.getElementById('chat-modal').classList.remove('hidden');
+        document.body.classList.add('modal-open');
+
+        if(friendChatUnsubscribe) {
+            friendChatUnsubscribe();
+            friendChatUnsubscribe = null;
+        }
+
+        const chatId = makeChatId(me.id, target.id);
+        const messagesRef = window.fsMethods.collection(window.db, 'chats', chatId, 'messages');
+        const messagesQuery = window.fsMethods.query(messagesRef, window.fsMethods.orderBy('createdAt', 'asc'));
+
+        friendChatUnsubscribe = window.fsMethods.onSnapshot(messagesQuery, snapshot => {
+            renderChatMessages(snapshot.docs.map(d => ({ id:d.id, ...d.data() })), me.id);
+        }, error => {
+            console.error('Chat listener error:', error);
+            const box = document.getElementById('chat-messages');
+            if(box) box.innerHTML = '<div class="chat-empty">Unable to load messages. Check Firebase Firestore rules.</div>';
+        });
+
+        setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
+    }
+
+    function renderChatMessages(messages, myUid) {
+        const box = document.getElementById('chat-messages');
+        if(!box) return;
+
+        if(!messages.length) {
+            box.innerHTML = '<div class="chat-empty">No messages yet. Start the conversation.</div>';
+            return;
+        }
+
+        box.innerHTML = messages.map(m => {
+            const mine = String(m.senderId) === String(myUid);
+            const text = escapeChatHtml(m.text || '').replace(/\n/g, '<br>');
+            let time = '';
+            if(m.createdAt && typeof m.createdAt.toDate === 'function') {
+                time = m.createdAt.toDate().toLocaleString([], {hour:'2-digit', minute:'2-digit'});
+            } else if(m.clientTime) {
+                time = new Date(m.clientTime).toLocaleString([], {hour:'2-digit', minute:'2-digit'});
+            }
+            return `<div class="chat-bubble ${mine ? 'mine' : 'theirs'}">${text}<span class="chat-time">${escapeChatHtml(time)}</span></div>`;
+        }).join('');
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendChatMessage() {
+        const me = getMessagingUser();
+        const input = document.getElementById('chat-input');
+        const btn = document.getElementById('chat-send');
+        const text = (input?.value || '').trim();
+
+        if(!me || !currentChatUserId || !text) return;
+
+        const target = (appData.users || []).find(u => String(u.id) === String(currentChatUserId));
+        if(!target) return;
+
+        const chatId = makeChatId(me.id, target.id);
+        const messagesRef = window.fsMethods.collection(window.db, 'chats', chatId, 'messages');
+
+        try {
+            if(btn) btn.disabled = true;
+            await window.fsMethods.addDoc(messagesRef, {
+                senderId: String(me.id),
+                receiverId: String(target.id),
+                text: text.slice(0, 2000),
+                clientTime: Date.now(),
+                createdAt: window.fsMethods.serverTimestamp()
+            });
+            input.value = '';
+            input.focus();
+        } catch(error) {
+            console.error('Send message error:', error);
+            alert('Message could not be sent. Please check your Firebase Firestore rules.');
+        } finally {
+            if(btn) btn.disabled = false;
+        }
+    }
+
+    function handleChatKeydown(event) {
+        if(event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendChatMessage();
+        }
+    }
+
+    function closeChatModal() {
+        document.getElementById('chat-modal')?.classList.add('hidden');
+        document.body.classList.remove('modal-open');
+        currentChatUserId = null;
+        if(friendChatUnsubscribe) {
+            friendChatUnsubscribe();
+            friendChatUnsubscribe = null;
+        }
+    }
 
     function renderProfile() {
         const user = getActiveUser();
