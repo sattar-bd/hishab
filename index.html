@@ -4654,43 +4654,46 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
         }
         const p = data.user.profile || {};
         const exportBox = document.createElement('div');
-        exportBox.style.cssText = `position:fixed;left:-100000px;top:0;width:1100px;background:#fff;color:#111827;padding:35px;box-sizing:border-box;font-family:"Noto Sans Bengali","Nirmala UI","Segoe UI",Arial,sans-serif;`;
+        exportBox.style.cssText = `position:fixed;left:-100000px;top:0;width:1400px;background:#fff;color:#111827;padding:42px;box-sizing:border-box;font-family:"Noto Sans Bengali","Nirmala UI","Segoe UI",Arial,sans-serif;line-height:1.35;`;
         exportBox.innerHTML = `
-            <div style="font-size:26px;font-weight:800;margin-bottom:12px;">হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)</div>
-            <div style="font-size:16px;margin-bottom:7px;">কর্মচারী: ${escapeHtml(p.name || '-')} &nbsp;&nbsp; ${escapeHtml(data.cycleText || '')}</div>
-            <div style="font-size:15px;margin-bottom:18px;">ডিউটি: ${data.dutyDays} দিন &nbsp;|&nbsp; রবিবার: ${data.sundayDays} দিন &nbsp;|&nbsp; ছুটি: ${data.holidayDays} দিন &nbsp;|&nbsp; ওটি: ${data.totalOT.toFixed(1)} ঘণ্টা</div>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <div style="font-size:32px;font-weight:900;margin-bottom:14px;color:#0f172a;">হাজিরা রেকর্ড (নির্বাচিত মাসের এন্ট্রি)</div>
+            <div style="font-size:19px;font-weight:700;margin-bottom:8px;color:#1e293b;">কর্মচারী: ${escapeHtml(p.name || '-')} &nbsp;&nbsp; ${escapeHtml(data.cycleText || '')}</div>
+            <div style="font-size:17px;font-weight:600;margin-bottom:22px;color:#475569;">ডিউটি: ${data.dutyDays} দিন &nbsp;|&nbsp; রবিবার: ${data.sundayDays} দিন &nbsp;|&nbsp; ছুটি: ${data.holidayDays} দিন &nbsp;|&nbsp; ওটি: ${data.totalOT.toFixed(1)} ঘণ্টা</div>
+            <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:17px;">
                 <thead><tr>
-                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">তারিখ</th>
-                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">বার</th>
-                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">ইন-আউট</th>
-                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">ওটি</th>
-                    <th style="border:1px solid #94a3b8;padding:8px;background:#e2e8f0;">ধরণ</th>
+                    <th style="width:16%;border:2px solid #64748b;padding:11px 8px;background:#dbeafe;color:#0f172a;font-weight:900;">তারিখ</th>
+                    <th style="width:18%;border:2px solid #64748b;padding:11px 8px;background:#dbeafe;color:#0f172a;font-weight:900;">বার</th>
+                    <th style="width:25%;border:2px solid #64748b;padding:11px 8px;background:#dbeafe;color:#0f172a;font-weight:900;">ইন-আউট</th>
+                    <th style="width:13%;border:2px solid #64748b;padding:11px 8px;background:#dbeafe;color:#0f172a;font-weight:900;">ওটি</th>
+                    <th style="width:28%;border:2px solid #64748b;padding:11px 8px;background:#dbeafe;color:#0f172a;font-weight:900;">ধরণ</th>
                 </tr></thead>
-                <tbody>${(data.rows.length ? data.rows : [['-','-','-','-','কোনো হাজিরা রেকর্ড নেই']]).map(row=>`<tr>${row.map(cell=>`<td style="border:1px solid #cbd5e1;padding:7px;text-align:center;">${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
+                <tbody>${(data.rows.length ? data.rows : [['-','-','-','-','কোনো হাজিরা রেকর্ড নেই']]).map(row=>`<tr>${row.map(cell=>`<td style="border:1.5px solid #94a3b8;padding:10px 8px;text-align:center;vertical-align:middle;color:#111827;font-weight:700;word-break:break-word;overflow-wrap:anywhere;background:#fff;">${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
             </table>
-            <div style="font-size:19px;font-weight:800;margin-top:18px;">মোট বেতন: RM ${data.calculatedSalary.toFixed(2)}</div>`;
+            <div style="margin-top:22px;padding:16px 20px;background:#ecfdf5;border:2px solid #10b981;border-radius:10px;font-size:24px;font-weight:900;text-align:right;color:#065f46;">মোট বেতন: RM ${data.calculatedSalary.toFixed(2)}</div>`;
         document.body.appendChild(exportBox);
         try {
             await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-            const canvas=await html2canvas(exportBox,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false,windowWidth:1100});
-            const {jsPDF}=window.jspdf; const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-            const pageW=297,pageH=210,margin=8,usableW=pageW-margin*2,usableH=pageH-margin*2;
-            const pxPerMm=canvas.width/usableW, slicePx=Math.floor(usableH*pxPerMm);
+            const canvas=await html2canvas(exportBox,{scale:3,backgroundColor:'#fff',useCORS:true,allowTaint:false,logging:false,width:1400,windowWidth:1400,scrollX:0,scrollY:0});
+            const {jsPDF}=window.jspdf;
+            const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+            const pageW=297,pageH=210,margin=7,usableW=pageW-margin*2,usableH=pageH-margin*2;
+            const pxPerMm=canvas.width/usableW,slicePx=Math.floor(usableH*pxPerMm);
             let offset=0,page=0;
             while(offset<canvas.height){
-                if(page++) doc.addPage();
-                const h=Math.min(slicePx,canvas.height-offset), slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=h;
-                const ctx=slice.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,slice.width,slice.height);
+                if(page++>0) doc.addPage();
+                const h=Math.min(slicePx,canvas.height-offset);
+                const slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=h;
+                const ctx=slice.getContext('2d',{alpha:false});
+                ctx.fillStyle='#fff'; ctx.fillRect(0,0,slice.width,slice.height);
+                ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
                 ctx.drawImage(canvas,0,offset,canvas.width,h,0,0,canvas.width,h);
-                doc.addImage(slice.toDataURL('image/jpeg',0.95),'JPEG',margin,margin,usableW,h/pxPerMm,undefined,'FAST');
+                doc.addImage(slice.toDataURL('image/jpeg',0.98),'JPEG',margin,margin,usableW,h/pxPerMm,undefined,'FAST');
                 offset+=h;
             }
             doc.save(getExportFileName(data,'pdf'));
         } catch(err) { console.error('Attendance PDF export failed:',err); alert('PDF তৈরি করা যায়নি। আবার চেষ্টা করুন।'); }
         finally { exportBox.remove(); }
     }
-
     function renderAttendanceSummary() {
         const user = getActiveUser();
         if(!user) return;
