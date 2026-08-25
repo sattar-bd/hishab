@@ -5369,22 +5369,7 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
         box.innerHTML = '';
         users.forEach(u => {
             const p = u.profile || {};
-            const isMe = u.id === activeUserId;
-            box.innerHTML += `
-                <div class="admin-user-row">
-                    <div class="admin-user-avatar"><i class="fa-solid fa-user"></i></div>
-                    <div class="admin-user-info">
-                        <b>${p.name || 'No Name'}</b>
-                        <small>${p.email || '-'}</small>
-                        <span class="role-badge role-${(u.role || 'user').toLowerCase()}">${u.role || 'User'}</span>
-                    </div>
-                    <div class="admin-user-actions">
-                        <button onclick="manageUserEntries('${u.id}')" title="Manage Entries"><i class="fa-solid fa-folder-open"></i></button>
-                        <button onclick="editUserFromListPage('${u.id}')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${!isMe ? `<button class="danger" onclick="deleteUserFromListPage('${u.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-                    </div>
-                </div>
-            `;
+            box.innerHTML += renderAdminUserListRow(u);
         });
 
         if(!box.innerHTML){
@@ -5392,13 +5377,73 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
         }
     }
 
+    function renderAdminUserListRow(u){
+        const p = u.profile || {};
+        return `
+            <div class="admin-user-row" id="admin-user-row-${u.id}">
+                <div class="admin-user-avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="admin-user-info">
+                    <b>${escapeHtml(p.name || 'No Name')}</b>
+                    <small>${escapeHtml(p.email || '-')}</small>
+                    <span class="role-badge role-${(u.role || 'user').toLowerCase()}">${escapeHtml(u.role || 'User')}</span>
+                </div>
+                <div class="admin-user-actions">
+                    <button onclick="manageUserEntries('${u.id}')" title="Manage Entries"><i class="fa-solid fa-folder-open"></i></button>
+                    <button onclick="editUserFromListPage('${u.id}')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="danger" onclick="deleteUserFromListPage('${u.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>`;
+    }
+
     function editUserFromListPage(userId){
-        editUserByAdmin(userId);
-        // Keep the user management experience inside the full User List page.
-        const section = document.getElementById('user-edit-section');
-        if(section){
-            section.classList.remove('hidden');
-            section.scrollIntoView({behavior:'smooth', block:'start'});
+        if(!isAdmin()) return;
+        const u = appData.users.find(x => x.id === userId);
+        if(!u) return;
+        const p = u.profile || {};
+        const row = document.getElementById('admin-user-row-' + userId);
+        if(!row) return;
+        row.innerHTML = `
+            <div class="admin-user-avatar"><i class="fa-solid fa-user-pen"></i></div>
+            <div class="admin-user-info" style="flex:1;">
+                <input id="inline-user-name-${userId}" class="form-control" style="margin-bottom:6px;" value="${escapeHtml(p.name || '')}" placeholder="User Name">
+                <input id="inline-user-email-${userId}" class="form-control" style="margin-bottom:6px;" value="${escapeHtml(p.email || '')}" placeholder="Email" type="email">
+                <select id="inline-user-role-${userId}" class="form-control">
+                    <option value="User" ${u.role==='User'?'selected':''}>User</option>
+                    <option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option>
+                    <option value="Editor" ${u.role==='Editor'?'selected':''}>Editor</option>
+                    <option value="Moderator" ${u.role==='Moderator'?'selected':''}>Moderator</option>
+                </select>
+            </div>
+            <div class="admin-user-actions">
+                <button onclick="saveUserInline('${u.id}')" title="Save"><i class="fa-solid fa-check"></i></button>
+                <button class="danger" onclick="cancelUserInline('${u.id}')" title="Cancel"><i class="fa-solid fa-xmark"></i></button>
+            </div>`;
+    }
+
+    async function saveUserInline(userId){
+        if(!isAdmin()) return;
+        const u = appData.users.find(x => x.id === userId);
+        if(!u) return;
+        const nameEl = document.getElementById('inline-user-name-' + userId);
+        const emailEl = document.getElementById('inline-user-email-' + userId);
+        const roleEl = document.getElementById('inline-user-role-' + userId);
+        const name = (nameEl?.value || '').trim();
+        const email = (emailEl?.value || '').trim();
+        if(!name || !email){ alert('Please enter name and email.'); return; }
+        u.profile = u.profile || {};
+        u.profile.name = name;
+        u.profile.email = email;
+        u.role = roleEl?.value || u.role || 'User';
+        await window.fsMethods.setDoc(window.fsMethods.doc(window.db, 'users', String(userId)), u);
+        renderAdminUserListPage();
+        if(typeof renderAdminUserList === 'function') renderAdminUserList();
+    }
+
+    function cancelUserInline(userId){
+        const u = appData.users.find(x => x.id === userId);
+        if(u) {
+            const row = document.getElementById('admin-user-row-' + userId);
+            if(row) row.outerHTML = renderAdminUserListRow(u);
         }
     }
 
@@ -5432,7 +5477,7 @@ function renderAdminUserList() {
                     <td>
                         <button class="btn btn-sm btn-outline" onclick="manageUserEntries('${u.id}')" title="Manage Entries"><i class="fa-solid fa-folder-open"></i></button>
                         <button class="table-action-btn edit" onclick="editUserByAdmin('${u.id}')" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${!isMe ? `<button class="table-action-btn delete" onclick="deleteUserByAdmin('${u.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        <button class="table-action-btn delete" onclick="deleteUserByAdmin('${u.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
             `;
@@ -5442,7 +5487,6 @@ function renderAdminUserList() {
     function editUserByAdmin(userId) {
         const u = appData.users.find(x => x.id === userId);
         if(!u) return;
-
         document.getElementById('user-edit-section').classList.remove('hidden');
         document.getElementById('admin-user-id').value = u.id;
         document.getElementById('admin-user-name').value = u.profile.name || '';
