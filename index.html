@@ -3191,7 +3191,7 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
             document.getElementById('lb-date').value = getTodayLocalDateString();
             document.getElementById('recv-month').value = new Date().toISOString().slice(0, 7);
             document.getElementById('bonus-month').value = new Date().toISOString().slice(0, 7);
-            document.getElementById('summary-filter-month').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('summary-filter-month').value = getCurrentCycleMonthValue();
             const ay = document.getElementById('analytics-year'); if(ay) ay.value = new Date().getFullYear();
 
             document.getElementById('page-login').classList.add('hidden');
@@ -3250,6 +3250,20 @@ body.dark-mode #page-summary .received-salary-large-card .received-salary-pro-bt
             return `${day}-${month}-${year}`;
         }
         return dateStr;
+    }
+
+    // Automatically select the payroll cycle month:
+    // 26th of a month -> the following month's cycle label.
+    // 1st-25th -> the current month's cycle label.
+    function getCurrentCycleMonthValue() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth(); // 0-based
+        const cycleMonth = today.getDate() >= 26
+            ? new Date(year, month + 1, 1)
+            : new Date(year, month, 1);
+
+        return `${cycleMonth.getFullYear()}-${String(cycleMonth.getMonth() + 1).padStart(2, '0')}`;
     }
 
     function getCycleDateRange(yearMonthStr) {
